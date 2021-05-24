@@ -9,9 +9,42 @@ export default (app) => {
       reply.render('users/index', { users });
       return reply;
     })
+    .get('/users/:id/edit', { name: 'editUser' }, async (req, reply) => {
+      console.log(111, 'get one user req.params', req.params);
+      const user = await app.objection.models.user.query().findById(req.params.id);
+
+      console.log(111, user);
+      reply.render('users/edit', { user });
+      return reply;
+    })
+    .patch('/users/:id', { name: 'patchUser' }, async (req, reply) => {
+      console.log(444, 'get one user req.params', req.params);
+      console.log(444, 'get one user req.body.data', req.body.data);
+
+      // const user = await app.objection.models.user.query().findById(req.params.id).patch({
+      //   firstName: req.body.data.firstName,
+      //   lastName: req.body.data.lastName,
+      // });
+
+      // console.log(444, user);
+
+      req.flash('info', 'user updated');
+      reply.redirect(app.reverse('users'));
+      return reply;
+    })
     .get('/users/new', { name: 'newUser' }, (req, reply) => {
       const user = new app.objection.models.user();
       reply.render('users/new', { user });
+    })
+    .delete('/users/:id', { name: 'deleteUser' }, async (req, reply) => {
+      console.log(222, 'delete req.params', req.params);
+
+      const user = await app.objection.models.user.query().deleteById(req.params.id);
+      console.log(222, user);
+
+      req.flash('info', 'user deleted');
+      reply.redirect(app.reverse('users'));
+      return reply;
     })
     .post('/users', async (req, reply) => {
       try {

@@ -103,9 +103,12 @@ const registerPlugins = (app) => {
     (user) => app.objection.models.user.query().findById(user.id),
   );
   fastifyPassport.registerUserSerializer((user) => Promise.resolve(user));
+
   fastifyPassport.use(new FormStrategy('form', app));
+
   app.register(fastifyPassport.initialize());
   app.register(fastifyPassport.secureSession());
+
   app.decorate('fp', fastifyPassport);
   app.decorate('authenticate', (...args) => fastifyPassport.authenticate(
     'form',
