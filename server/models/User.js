@@ -1,4 +1,4 @@
-// @ts-check
+// @ts-ignore
 
 import { Model } from 'objection';
 import objectionUnique from 'objection-unique';
@@ -15,9 +15,11 @@ export default class User extends unique(Model) {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['email', 'password'],
+      required: ['firstName', 'lastName', 'email', 'password'],
       properties: {
         id: { type: 'integer' },
+        firstName: { type: 'string', minLength: 1, maxLength: 255 },
+        lastName: { type: 'string', minLength: 1, maxLength: 255 },
         email: { type: 'string', format: 'email' },
         password: { type: 'string', minLength: 3 },
       },
@@ -30,5 +32,9 @@ export default class User extends unique(Model) {
 
   verifyPassword(password) {
     return encrypt(password) === this.passwordDigest;
+  }
+
+  fullName() {
+    return `${this.firstName} ${this.lastName}`;
   }
 }
