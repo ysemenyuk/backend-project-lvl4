@@ -11,7 +11,9 @@ export default (app) => {
     })
     .get('/users/:id/edit', { name: 'editUser' }, async (req, reply) => {
       console.log(111, 'get one user req.params', req.params);
-      const user = await app.objection.models.user.query().findById(req.params.id);
+      const user = await app.objection.models.user
+        .query()
+        .findById(req.params.id);
 
       console.log(111, user);
       reply.render('users/edit', { user });
@@ -39,7 +41,9 @@ export default (app) => {
     .delete('/users/:id', { name: 'deleteUser' }, async (req, reply) => {
       console.log(222, 'delete req.params', req.params);
 
-      const user = await app.objection.models.user.query().deleteById(req.params.id);
+      const user = await app.objection.models.user
+        .query()
+        .deleteById(req.params.id);
       console.log(222, user);
 
       req.flash('info', 'user deleted');

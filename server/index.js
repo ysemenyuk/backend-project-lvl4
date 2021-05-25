@@ -68,15 +68,14 @@ const setUpStaticAssets = (app) => {
 };
 
 const setupLocalization = () => {
-  i18next
-    .init({
-      lng: 'ru',
-      fallbackLng: 'en',
-      debug: isDevelopment,
-      resources: {
-        ru,
-      },
-    });
+  i18next.init({
+    lng: 'ru',
+    fallbackLng: 'en',
+    debug: isDevelopment,
+    resources: {
+      ru,
+    },
+  });
 };
 
 const addHooks = (app) => {
@@ -92,6 +91,7 @@ const registerPlugins = (app) => {
   app.register(fastifyErrorPage);
   app.register(fastifyReverseRoutes);
   app.register(fastifyFormbody, { parser: qs.parse });
+
   app.register(fastifySecureSession, {
     secret: process.env.SESSION_KEY,
     cookie: {
@@ -99,25 +99,27 @@ const registerPlugins = (app) => {
     },
   });
 
-  fastifyPassport.registerUserDeserializer(
-    (user) => app.objection.models.user.query().findById(user.id),
-  );
-  fastifyPassport.registerUserSerializer((user) => Promise.resolve(user));
-
-  fastifyPassport.use(new FormStrategy('form', app));
-
   app.register(fastifyPassport.initialize());
   app.register(fastifyPassport.secureSession());
 
+  fastifyPassport.use(new FormStrategy('form', app));
+
+  fastifyPassport.registerUserSerializer((user) => Promise.resolve(user));
+  fastifyPassport.registerUserDeserializer((user) =>
+    app.objection.models.user.query().findById(user.id)
+  );
+
   app.decorate('fp', fastifyPassport);
-  app.decorate('authenticate', (...args) => fastifyPassport.authenticate(
-    'form',
-    {
-      failureRedirect: app.reverse('root'),
-      failureFlash: i18next.t('flash.authError'),
-    },
-    // @ts-ignore
-  )(...args));
+  app.decorate('authenticate', (...args) =>
+    fastifyPassport.authenticate(
+      'form',
+      {
+        failureRedirect: app.reverse('root'),
+        failureFlash: i18next.t('flash.authError'),
+      }
+      // @ts-ignore
+    )(...args)
+  );
 
   app.register(fastifyMethodOverride);
   app.register(fastifyObjectionjs, {
@@ -134,7 +136,6 @@ export default () => {
   });
 
   registerPlugins(app);
-
   setupLocalization();
   setUpViews(app);
   setUpStaticAssets(app);

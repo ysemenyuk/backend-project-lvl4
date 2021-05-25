@@ -1,5 +1,4 @@
 ---
-
 root: true
 
 extends:
@@ -16,6 +15,9 @@ env:
 rules:
   no-console: 0
   import/extensions: 0
+  comma-dangle: 0
+  implicit-arrow-linebreak: 0
+  function-paren-newline: 0
   new-cap:
     - error
     - properties: false
@@ -23,5 +25,5 @@ rules:
     - error
     - props: true
       ignorePropertyModificationsFor:
-      - req
-      - reply
+        - req
+        - reply
