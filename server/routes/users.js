@@ -51,7 +51,6 @@ export default (app) => {
 
         req.flash('error', 'You cannot edit or delete another user');
         reply.redirect(app.reverse('users'));
-
         return reply;
       }
     )
@@ -61,7 +60,7 @@ export default (app) => {
 
       try {
         const user = await app.objection.models.user.fromJson(req.body.data);
-        console.log('- user -', user);
+        // console.log('- user -', user);
 
         const dbUser = await app.objection.models.user
           .query()
@@ -83,12 +82,29 @@ export default (app) => {
         return reply;
       }
     })
-    .delete('/users/:id', { name: 'deleteUser' }, async (req, reply) => {
-      // console.log('- delete req.params -', req.params);
-      await app.objection.models.user.query().deleteById(req.params.id);
+    .delete(
+      '/users/:id',
+      {
+        name: 'deleteUser',
+        preValidation: fastifyPassport.authenticate('form', {
+          failureRedirect: '/',
+          failureFlash: i18next.t('flash.authError'),
+        }),
+      },
+      async (req, reply) => {
+        // console.log('- delete req.params -', req.params);
 
-      req.flash('info', 'user deleted');
-      reply.redirect(app.reverse('users'));
-      return reply;
-    });
+        if (req.user.id === Number(req.params.id)) {
+          await app.objection.models.user.query().deleteById(req.params.id);
+
+          req.flash('info', 'user deleted');
+          reply.redirect(app.reverse('users'));
+          return reply;
+        }
+
+        req.flash('error', 'You cannot edit or delete another user');
+        reply.redirect(app.reverse('users'));
+        return reply;
+      }
+    );
 };
