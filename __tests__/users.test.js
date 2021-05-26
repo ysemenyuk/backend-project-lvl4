@@ -1,4 +1,4 @@
-// @ts-check
+// @ts-nocheck
 
 import _ from 'lodash';
 import getApp from '../server/index.js';
@@ -37,7 +37,7 @@ describe('test users CRUD', () => {
   it('new', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: app.reverse('newUser'),
+      url: app.reverse('usersNew'),
     });
 
     expect(response.statusCode).toBe(200);
@@ -54,6 +54,7 @@ describe('test users CRUD', () => {
     });
 
     expect(response.statusCode).toBe(302);
+
     const expected = {
       ..._.omit(params, 'password'),
       passwordDigest: encrypt(params.password),

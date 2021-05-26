@@ -1,4 +1,4 @@
-// @ts-check
+// @ts-nocheck
 
 import getApp from '../server/index.js';
 import { getTestData, prepareData } from './helpers/index.js';
@@ -19,7 +19,7 @@ describe('test session', () => {
   it('test sign in / sign out', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: app.reverse('newSession'),
+      url: app.reverse('sessionNew'),
     });
 
     expect(response.statusCode).toBe(200);

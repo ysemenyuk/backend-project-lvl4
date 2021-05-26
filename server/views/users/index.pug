@@ -17,7 +17,8 @@ block content
           td= user.email
           td= formatDate(user.createdAt)
           td 
-            a(class='btn btn-link p-0' href=`users/${user.id}/edit`) Edit
-            form(action=route('deleteUser', { id: user.id }), method="post")
+            //- a(class='btn btn-link p-0' href=`users/${user.id}/edit`) Edit
+            a(class='btn btn-link p-0' href=route('usersEdit', { id: user.id })) Edit
+            form(action=route('usersDelete', { id: user.id }), method="post")
               input(name="_method" type="hidden" value="delete")
               input(class='btn btn-link p-0' type='submit' value='Delete')

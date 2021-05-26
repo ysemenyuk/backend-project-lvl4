@@ -8,9 +8,13 @@ const migrations = {
 
 module.exports = {
   development: {
-    client: 'sqlite3',
+    client: process.env.DEV_DB_TYPE,
     connection: {
-      filename: './database.sqlite',
+      user: process.env.DEV_DB_USER,
+      password: process.env.DEV_DB_PASSWORD,
+      database: process.env.DEV_DB_NAME,
+      host: process.env.DEV_DB_HOST,
+      port: process.env.DEV_DB_PORT,
     },
     useNullAsDefault: true,
     migrations,
