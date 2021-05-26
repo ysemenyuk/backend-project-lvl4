@@ -34,6 +34,7 @@ export default (app) => {
       '/users/:id/edit',
       {
         name: 'usersEdit',
+        // preValidation: app.authenticate,
         preValidation: fastifyPassport.authenticate('form', {
           failureFlash: i18next.t('flash.authError'),
           failureRedirect: '/users',
@@ -41,8 +42,6 @@ export default (app) => {
       },
       async (req, reply) => {
         // console.log('- get edit user req.user -', req.user);
-        // console.log('- get edit user req.params -', req.params);
-
         const { id } = req.params;
         const { user } = req;
 
@@ -63,31 +62,23 @@ export default (app) => {
       }
     )
     .patch('/users/:id/edit', { name: 'usersPatch' }, async (req, reply) => {
-      // console.log('- patch one user req.params -', req.params);
-      // console.log('- patch one user req.body.data -', req.body.data);
-
+      console.log('- patch one user req.params -', req.params);
       const { id } = req.params;
 
       try {
         const formUser = await app.objection.models.user.fromJson(req.body.data);
-        // console.log('- formUser -', formUser);
-
         const dbUser = await app.objection.models.user.query().findById(id);
         await dbUser.$query().patch(formUser);
-        // console.log('- dbUser -', dbUser);
 
         req.flash('info', 'user updated succes');
         reply.redirect(app.reverse('users'));
         return reply;
       } catch (err) {
         // console.log('- user update err -', err);
-        // console.log('- req.body.data -', req.body.data);
-
         const user = { id, ...req.body.data };
-        const errors = err.data;
 
         req.flash('error', 'user update error');
-        reply.render('/users/edit', { user, errors });
+        reply.render('/users/edit', { user, errors: err.data });
         return reply;
       }
     })
@@ -101,8 +92,7 @@ export default (app) => {
         }),
       },
       async (req, reply) => {
-        // console.log('- delete req.params -', req.params);
-
+        console.log('- delete req.params -', req.params);
         const { id } = req.params;
         const { user } = req;
 
@@ -121,6 +111,7 @@ export default (app) => {
           return reply;
         } catch (err) {
           // console.log('- user delete err -', err);
+
           req.flash('error', 'user delete error');
           reply.redirect(app.reverse('users'));
           return reply;

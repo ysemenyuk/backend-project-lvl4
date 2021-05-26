@@ -100,15 +100,15 @@ const registerPlugins = (app) => {
     },
   });
 
-  app.register(fastifyPassport.initialize());
-  app.register(fastifyPassport.secureSession());
-
-  fastifyPassport.use(new FormStrategy('form', app));
-
-  fastifyPassport.registerUserSerializer((user) => Promise.resolve(user));
   fastifyPassport.registerUserDeserializer((user) =>
     app.objection.models.user.query().findById(user.id)
   );
+  fastifyPassport.registerUserSerializer((user) => Promise.resolve(user));
+
+  fastifyPassport.use(new FormStrategy('form', app));
+
+  app.register(fastifyPassport.initialize());
+  app.register(fastifyPassport.secureSession());
 
   app.decorate('fp', fastifyPassport);
   app.decorate('authenticate', (...args) =>

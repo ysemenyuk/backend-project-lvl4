@@ -1,19 +1,24 @@
 // @ts-nocheck
 
 import getApp from '../server/index.js';
-import { getTestData, prepareData } from './helpers/index.js';
+import { getTestData } from './helpers/index.js';
 
 describe('test session', () => {
   let app;
   let knex;
-  let testData;
+  let models;
+
+  const userData = getTestData();
 
   beforeAll(async () => {
     app = await getApp();
     knex = app.objection.knex;
+    models = app.objection.models;
+  });
+
+  beforeEach(async () => {
     await knex.migrate.latest();
-    await prepareData(app);
-    testData = getTestData();
+    await models.user.query().insert(userData);
   });
 
   it('test sign in / sign out', async () => {
@@ -24,11 +29,13 @@ describe('test session', () => {
 
     expect(response.statusCode).toBe(200);
 
+    const { email, password } = userData;
+
     const responseSignIn = await app.inject({
       method: 'POST',
       url: app.reverse('session'),
       payload: {
-        data: testData.users.existing,
+        data: { email, password },
       },
     });
 

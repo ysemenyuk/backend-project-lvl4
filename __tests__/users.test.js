@@ -3,13 +3,15 @@
 import _ from 'lodash';
 import getApp from '../server/index.js';
 import encrypt from '../server/lib/secure.js';
-import { getTestData, prepareData } from './helpers/index.js';
+import { getTestData } from './helpers/index.js';
 
 describe('test users CRUD', () => {
   let app;
   let knex;
   let models;
-  const testData = getTestData();
+  let user;
+
+  const userData = getTestData();
 
   beforeAll(async () => {
     app = await getApp();
@@ -18,11 +20,8 @@ describe('test users CRUD', () => {
   });
 
   beforeEach(async () => {
-    // тесты не должны зависеть друг от друга
-    // перед каждым тестом выполняем миграции
-    // и заполняем БД тестовыми данными
     await knex.migrate.latest();
-    await prepareData(app);
+    user = await models.user.query().insert(userData);
   });
 
   it('index', async () => {
@@ -44,7 +43,8 @@ describe('test users CRUD', () => {
   });
 
   it('create', async () => {
-    const params = testData.users.new;
+    const params = getTestData();
+
     const response = await app.inject({
       method: 'POST',
       url: app.reverse('users'),
@@ -59,8 +59,46 @@ describe('test users CRUD', () => {
       ..._.omit(params, 'password'),
       passwordDigest: encrypt(params.password),
     };
-    const user = await models.user.query().findOne({ email: params.email });
-    expect(user).toMatchObject(expected);
+    const dbUser = await models.user.query().findOne({ email: params.email });
+    expect(dbUser).toMatchObject(expected);
+  });
+
+  it('update', async () => {
+    const updatedData = { ...userData, firstName: 'updatedName' };
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/users/${user.id}/edit`,
+      payload: {
+        data: updatedData,
+      },
+    });
+
+    expect(response.statusCode).toBe(302);
+
+    const expected = {
+      ..._.omit(updatedData, 'password'),
+      passwordDigest: encrypt(updatedData.password),
+    };
+    const dbUser = await models.user.query().findById(user.id);
+    expect(dbUser).toMatchObject(expected);
+  });
+
+  it('delete', async () => {
+    const response = await app.inject({
+      method: 'DELETE',
+      url: `/users/${user.id}`,
+    });
+
+    console.log('-------response------', response);
+
+    expect(response.statusCode).toBe(302);
+
+    const dbUser = await models.user.query().findById(user.id);
+
+    console.log('-------dbUser------', dbUser);
+
+    expect(dbUser).toBeUndefined();
   });
 
   afterEach(async () => {
