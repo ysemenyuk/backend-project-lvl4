@@ -1,5 +1,3 @@
-// @ts-ignore
-
 import { Model } from 'objection';
 import objectionUnique from 'objection-unique';
 

@@ -23,7 +23,7 @@ export default (app) => {
         reply.redirect(app.reverse('root'));
         return reply;
       } catch (err) {
-        // console.log('- user create err -', err);
+        console.log('- user create err -', err);
         const { data } = err;
         req.flash('error', i18next.t('flash.users.create.error'));
         reply.render('users/new', { user: req.body.data, errors: data });

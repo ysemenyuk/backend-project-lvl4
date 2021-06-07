@@ -24,6 +24,7 @@ module.exports = {
     layouts: {
       application: {
         users: 'Пользователи',
+        statuses: 'Статусы',
         signIn: 'Вход',
         signUp: 'Регистрация',
         signOut: 'Выход',
@@ -51,6 +52,9 @@ module.exports = {
           description: 'Практические курсы по программированию',
           more: 'Узнать Больше',
         },
+      },
+      status: {
+
       },
     },
   },

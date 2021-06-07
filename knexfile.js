@@ -9,6 +9,7 @@ const migrations = {
 module.exports = {
   development: {
     client: 'sqlite3',
+    // connection: ':memory:',
     connection: {
       filename: './database.sqlite',
     },
