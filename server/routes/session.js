@@ -3,7 +3,7 @@ import i18next from 'i18next';
 
 export default (app) => {
   app
-    .get('/session/new', { name: 'sessionNew' }, (req, reply) => {
+    .get('/session/new', { name: 'newSession' }, (req, reply) => {
       const signInForm = {};
       reply.render('session/new', { signInForm });
     })

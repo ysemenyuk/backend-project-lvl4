@@ -19,6 +19,12 @@ module.exports = {
           success: 'Пользователь успешно зарегистрирован',
         },
       },
+      statuses: {
+        create: {
+          error: 'Не удалось создать статус',
+          success: 'Статус успешно зарегистрирован',
+        },
+      },
       authError: 'Доступ запрещён! Пожалуйста, авторизируйтесь.',
     },
     layouts: {
@@ -39,11 +45,19 @@ module.exports = {
       },
       users: {
         id: 'ID',
+        fullName: 'Полное имя',
+        firstName: 'Имя',
+        secondName: 'Фамилия',
+        password: 'Пароль',
         email: 'Email',
         createdAt: 'Дата создания',
         new: {
+          newUser: 'Регистрация',
           submit: 'Сохранить',
-          signUp: 'Регистрация',
+        },
+        edit: {
+          editUser: 'Изменение пользователя',
+          submit: 'Изменить',
         },
       },
       welcome: {
@@ -53,9 +67,7 @@ module.exports = {
           more: 'Узнать Больше',
         },
       },
-      status: {
-
-      },
+      status: {},
     },
   },
 };

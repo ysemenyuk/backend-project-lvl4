@@ -1,7 +1,7 @@
 extends ../layouts/application.pug
 
 block header
-  = t('views.users.new.signUp')
+  = t('views.users.new.newUser')
 
 block content
   +formFor()(action=route('users') method='post')

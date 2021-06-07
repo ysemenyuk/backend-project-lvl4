@@ -1,15 +1,14 @@
 extends ../layouts/application.pug
 
 block header
-  = 'edit user'
+  = t('views.users.edit.editUser')
 
 block content
-  //- form(action=`users/${user.id}` method='post')
-  form(action=route('usersPatch', { id: user.id }) method='post')
+  form(action=route('patchUser', { id: user.id }) method='post')
     +input(user, 'firstName', errors)(type="text")
     +input(user, 'lastName', errors)(type="text")
     +input(user, 'email', errors)(type="text")
     +input(user, 'password', errors)(type="password")
     input(name="_method" type="hidden" value="patch")
     .form-group
-      input(class='btn btn-primary' type='submit' value='submit')
+      input(class='btn btn-primary' type='submit' value=t('views.users.edit.submit'))

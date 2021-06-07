@@ -2,26 +2,23 @@ extends ../layouts/application.pug
 
 block content
   a(href=route('newStatus'))= 'Create status'
-  table.table.table-hover
-    thead
-      tr
-        th= 'status id'
-        th= 'status name'
-        //- th= 'status createdAt'
-        th
-    tbody
-      each status in statuses
+  if statuses.length > 0
+    table.table.table-hover
+      thead
         tr
-          td= status.id
-          td= status.name
-          //- td= status.createdAt
-          td
-            // a(href='#')= t('views.status.list.edit')
-            // +buttonTo('#', 'delete')(value=t('views.status.list.delete') class="btn btn-link")
-
-          //- td 
-          //-   a(class='btn btn-link p-0' href=route('usersEdit', { id: user.id })) Edit
-          //-   form(action=route('usersDelete', { id: user.id }), method="post")
-          //-     input(name="_method" type="hidden" value="delete")
-          //-     input(class='btn btn-link p-0' type='submit' value='Delete')
+          th= 'id'
+          th= 'name'
+          th= 'createdAt'
+          th
+      tbody
+        each status in statuses
+          tr
+            td= status.id
+            td= status.name
+            td= status.createdAt
+            td
+              a(class='btn btn-link p-0' href=route('editStatus', { id: status.id })) Edit
+              form(action=route('deleteStatus', { id: status.id }), method="post")
+                input(name="_method" type="hidden" value="delete")
+                input(class='btn btn-link p-0' type='submit' value='Delete')
 

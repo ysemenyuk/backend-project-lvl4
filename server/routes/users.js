@@ -4,16 +4,19 @@ import i18next from 'i18next';
 
 export default (app) => {
   app
+
     .get('/users', { name: 'users' }, async (req, reply) => {
       // console.log('- get users req.user -', req.user);
       const users = await app.objection.models.user.query();
       reply.render('users/index', { users });
       return reply;
     })
-    .get('/users/new', { name: 'usersNew' }, (req, reply) => {
+
+    .get('/users/new', { name: 'newUser' }, (req, reply) => {
       const user = new app.objection.models.user();
       reply.render('users/new', { user });
     })
+
     .post('/users', async (req, reply) => {
       try {
         const user = await app.objection.models.user.fromJson(req.body.data);
@@ -30,10 +33,11 @@ export default (app) => {
         return reply;
       }
     })
+
     .get(
       '/users/:id/edit',
       {
-        name: 'usersEdit',
+        name: 'editUser',
         // preValidation: app.authenticate,
         preValidation: fastifyPassport.authenticate('form', {
           failureFlash: i18next.t('flash.authError'),
@@ -61,7 +65,8 @@ export default (app) => {
         return reply;
       }
     )
-    .patch('/users/:id/edit', { name: 'usersPatch' }, async (req, reply) => {
+
+    .patch('/users/:id/edit', { name: 'patchUser' }, async (req, reply) => {
       console.log('- patch one user req.params -', req.params);
       const { id } = req.params;
 
@@ -82,10 +87,11 @@ export default (app) => {
         return reply;
       }
     })
+
     .delete(
       '/users/:id',
       {
-        name: 'usersDelete',
+        name: 'deleteUser',
         preValidation: fastifyPassport.authenticate('form', {
           failureFlash: i18next.t('flash.authError'),
           failureRedirect: '/users',
