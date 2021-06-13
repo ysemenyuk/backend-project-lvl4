@@ -1,5 +1,6 @@
 import { Model } from 'objection';
 import objectionUnique from 'objection-unique';
+import path from 'path';
 
 const unique = objectionUnique({ fields: ['name'] });
 
@@ -15,6 +16,19 @@ export default class Status extends unique(Model) {
       properties: {
         id: { type: 'integer' },
         name: { type: 'string', minLength: 1, maxLength: 255 },
+      },
+    };
+  }
+
+  static get relationMappings() {
+    return {
+      tasks: {
+        relation: Model.HasManyRelation,
+        modelClass: path.join(__dirname, 'Task.js'),
+        join: {
+          from: 'status.id',
+          to: 'task.statusId',
+        },
       },
     };
   }

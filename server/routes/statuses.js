@@ -78,7 +78,6 @@ export default (app) => {
       try {
         await app.objection.models.status.query().deleteById(id);
 
-        req.logOut();
         req.flash('info', 'status deleted succes');
         reply.redirect(app.reverse('statuses'));
         return reply;
