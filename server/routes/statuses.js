@@ -41,6 +41,7 @@ export default (app) => {
 
     .get('/statuses/:id/edit', { name: 'editStatus' }, async (req, reply) => {
       // console.log('- get edit user req.user -', req.user);
+
       const { id } = req.params;
       const status = await app.objection.models.status.query().findById(id);
 
@@ -48,7 +49,7 @@ export default (app) => {
       return reply;
     })
 
-    .patch('/statuses/:id/edit', { name: 'patchStatus' }, async (req, reply) => {
+    .patch('/statuses/:id', { name: 'patchStatus' }, async (req, reply) => {
       // console.log('- patch status req.params -', req.params);
       // console.log('- patch status req.body -', req.body);
       const { id } = req.params;

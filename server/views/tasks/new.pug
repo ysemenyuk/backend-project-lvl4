@@ -6,4 +6,22 @@ block header
 block content
   +formFor()(action=route('tasks') method='post')
     +input(task, 'name', errors)(type="text")
+    .form-group
+        label(for="data_description")= 'task description'
+        textarea.form-control(id="data_description" name="data[description]" rows="3")= ''
+    .form-group
+        label(for="data_statusId")= 'task statuses'
+        select.form-control(id="data_statusId" name="data[statusId]")
+          //- option(value='' selected)
+          option
+          each status in statuses
+            option(value=status.id) #{status.name}
+    .form-group
+        label(for="data_executorId")= 'task executor'
+        select.form-control(id="data_executorId" name="data[executorId]")
+          option(value='' selected)
+          each executor in executors
+            option(value=executor.id) #{executor.fullName()}
+    
     +submit(task)(value='submit')
+
