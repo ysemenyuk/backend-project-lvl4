@@ -1,14 +1,14 @@
 // @ts-nocheck
 
 import getApp from '../server/index.js';
-import { getTestData } from './helpers/index.js';
+import testData from './helpers/index.js';
 
 describe('test session', () => {
   let app;
   let knex;
   let models;
 
-  const userData = getTestData();
+  const userData = testData.getUser();
 
   beforeAll(async () => {
     app = await getApp();
@@ -24,7 +24,7 @@ describe('test session', () => {
   it('test sign in / sign out', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: app.reverse('sessionNew'),
+      url: app.reverse('newSession'),
     });
 
     expect(response.statusCode).toBe(200);

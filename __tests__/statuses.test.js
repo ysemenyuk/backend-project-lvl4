@@ -1,19 +1,21 @@
 // @ts-nocheck
 
-import _ from 'lodash';
+// import _ from 'lodash';
 import getApp from '../server/index.js';
-import encrypt from '../server/lib/secure.js';
+// import encrypt from '../server/lib/secure.js';
 import testData from './helpers/index.js';
 
-describe('test users CRUD', () => {
+describe('test statuses CRUD', () => {
   let app;
   let knex;
   let models;
-  let user;
+  // let user;
+  let status;
 
   let cookie;
 
   const userData = testData.getUser();
+  const statusData = testData.getStatus();
 
   beforeAll(async () => {
     app = await getApp();
@@ -23,7 +25,8 @@ describe('test users CRUD', () => {
 
   beforeEach(async () => {
     await knex.migrate.latest();
-    user = await models.user.query().insert(userData);
+    await models.user.query().insert(userData);
+    status = await models.status.query().insert(statusData);
 
     const { email, password } = userData;
 
@@ -43,7 +46,8 @@ describe('test users CRUD', () => {
   it('index', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: app.reverse('users'),
+      url: app.reverse('statuses'),
+      cookies: cookie,
     });
 
     expect(response.statusCode).toBe(200);
@@ -52,77 +56,63 @@ describe('test users CRUD', () => {
   it('new', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: app.reverse('newUser'),
+      url: app.reverse('newStatus'),
+      cookies: cookie,
     });
 
     expect(response.statusCode).toBe(200);
   });
 
   it('create', async () => {
-    const newUser = testData.getUser();
+    const newStatus = testData.getStatus();
 
     const response = await app.inject({
       method: 'POST',
-      url: app.reverse('users'),
+      url: app.reverse('statuses'),
+      cookies: cookie,
       payload: {
-        data: newUser,
+        data: newStatus,
       },
     });
 
     expect(response.statusCode).toBe(302);
 
-    const expected = {
-      ..._.omit(newUser, 'password'),
-      passwordDigest: encrypt(newUser.password),
-    };
-    const dbUser = await models.user.query().findOne({ email: newUser.email });
-    expect(dbUser).toMatchObject(expected);
-  });
+    const createdStatus = await models.status.query().findOne({ name: newStatus.name });
 
-  it('edit', async () => {
-    const response = await app.inject({
-      method: 'GET',
-      url: `/users/${user.id}/edit`,
-      cookies: cookie,
-    });
-
-    expect(response.statusCode).toBe(200);
+    expect(createdStatus).toMatchObject(newStatus);
   });
 
   it('update', async () => {
-    const updatedData = { ...userData, firstName: 'updatedName' };
+    const { id } = status;
+    const updateForm = { name: 'newStatusName' };
 
     const response = await app.inject({
       method: 'PATCH',
-      url: `/users/${user.id}`,
+      url: `/statuses/${id}`,
       cookies: cookie,
       payload: {
-        data: updatedData,
+        data: updateForm,
       },
     });
 
     expect(response.statusCode).toBe(302);
 
-    const expected = {
-      ..._.omit(updatedData, 'password'),
-      passwordDigest: encrypt(updatedData.password),
-    };
-    const dbUser = await models.user.query().findById(user.id);
-    expect(dbUser).toMatchObject(expected);
+    const updatedStatus = await models.status.query().findOne({ name: updateForm.name });
+    expect(updatedStatus).toMatchObject(updateForm);
   });
 
   it('delete', async () => {
+    const { id } = status;
+
     const response = await app.inject({
       method: 'DELETE',
-      url: `/users/${user.id}`,
-      cookies: cookie,
+      url: `/statuses/${id}`,
     });
 
     expect(response.statusCode).toBe(302);
 
-    const dbUser = await models.user.query().findById(user.id);
-
-    expect(dbUser).toBeUndefined();
+    const deletedStatus = await models.status.query().findById(id);
+    expect(deletedStatus).toBeUndefined();
   });
 
   afterEach(async () => {

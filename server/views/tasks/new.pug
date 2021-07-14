@@ -8,18 +8,19 @@ block content
     +input(task, 'name', errors)(type="text")
     .form-group
         label(for="data_description")= 'task description'
-        textarea.form-control(id="data_description" name="data[description]" rows="3")= ''
+        textarea.form-control(id="data_description" name="data[description]" rows="3")= task ? task.description : ''
     .form-group
         label(for="data_statusId")= 'task statuses'
         select.form-control(id="data_statusId" name="data[statusId]")
-          //- option(value='' selected)
           option
           each status in statuses
             option(value=status.id) #{status.name}
+        //- if errors.statusId
+        .form-control-feedback.invalid-feedback= 'error'
     .form-group
         label(for="data_executorId")= 'task executor'
         select.form-control(id="data_executorId" name="data[executorId]")
-          option(value='' selected)
+          option
           each executor in executors
             option(value=executor.id) #{executor.fullName()}
     

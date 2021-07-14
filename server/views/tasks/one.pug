@@ -10,13 +10,13 @@ block content
       .container
         .row.p-1
           .col= 'creator'
-          .col= task.creator
+          .col= task.creator.fullName()
         .row.p-1
           .col= 'executor'
-          .col= task.executor
+          .col= task.executor.fullName()
         .row.p-1
           .col= 'status'
-          .col= task.status
+          .col= task.status.name
         .row.p-1
           .col= 'createdAt'
           .col= task.createdAt

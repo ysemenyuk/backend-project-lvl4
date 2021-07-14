@@ -19,9 +19,9 @@ block content
             td= task.id
             td
               a(href=`/tasks/${task.id}`)= task.name
-            td= task.statusId
-            td= task.creatorId
-            td= task.executorId
+            td= task.status.name
+            td= task.creator.fullName()
+            td= task.executor.fullName()
             td= task.createdAt
             td
               a(class='btn btn-link p-0' href=route('editTask', { id: task.id })) Edit
