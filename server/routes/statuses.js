@@ -32,9 +32,9 @@ export default (app) => {
         return reply;
       } catch (err) {
         console.log('- status create err -', err);
-        const { data } = err;
+
         req.flash('error', i18next.t('flash.statuses.create.error'));
-        reply.render('statuses/new', { status: req.body.data, errors: data });
+        reply.render('statuses/new', { status: req.body.data, errors: err.data });
         return reply;
       }
     })

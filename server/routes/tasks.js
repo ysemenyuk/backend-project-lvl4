@@ -5,16 +5,21 @@ import i18next from 'i18next';
 export default (app) => {
   app
     .get('/tasks', { name: 'tasks', preValidation: app.authenticate }, async (req, reply) => {
-      // console.log('- get /tasks req -', req);
-      const tasks = await app.objection.models.task
-        .query()
-        .withGraphJoined('[status, creator, executor]');
-      // console.log('-- tasks --', tasks);
-      reply.render('tasks/index', { tasks });
-      return reply;
+      try {
+        // console.log('- get /tasks req -', req);
+        const tasks = await app.objection.models.task
+          .query()
+          .withGraphJoined('[status, creator, executor]');
+        // console.log('-- tasks --', tasks);
+        reply.render('tasks/index', { tasks });
+        return reply;
+      } catch (err) {
+        console.log('catch err', err);
+        return reply;
+      }
     })
 
-    .get('/tasks/:id', { name: 'task' }, async (req, reply) => {
+    .get('/tasks/:id', { name: 'task', preValidation: app.authenticate }, async (req, reply) => {
       // console.log('- get /task req -', req);
       try {
         const { id } = req.params;
@@ -23,8 +28,6 @@ export default (app) => {
           .query()
           .findById(id)
           .withGraphJoined('[status, creator, executor]');
-
-        console.log(111, task);
 
         reply.render('tasks/one', { task });
         return reply;
@@ -35,29 +38,34 @@ export default (app) => {
     })
 
     .get('/tasks/new', { name: 'newTask' }, async (req, reply) => {
-      const executors = await app.objection.models.user.query();
-      const statuses = await app.objection.models.status.query();
+      try {
+        const executors = await app.objection.models.user.query();
+        const statuses = await app.objection.models.status.query();
 
-      reply.render('tasks/new', { executors, statuses });
-      return reply;
+        reply.render('tasks/new', { task: {}, errors: {}, executors, statuses });
+        return reply;
+      } catch (err) {
+        console.log('-- err --', err);
+        return reply;
+      }
     })
 
     .post('/tasks', async (req, reply) => {
+      console.log('---post tasks req.body.data---', req.body.data);
+
+      const { name, description, statusId, executorId } = req.body.data;
+
+      const taskData = {
+        name,
+        description,
+        statusId: statusId ? Number(statusId) : null,
+        executorId: executorId ? Number(executorId) : null,
+        creatorId: req.user.id,
+      };
+
+      console.log('---post tasks taskData---', taskData);
+
       try {
-        console.log('---post tasks req.body.data---', req.body.data);
-
-        const { name, description, statusId, executorId } = req.body.data;
-
-        const taskData = {
-          name,
-          description,
-          statusId: statusId ? Number(statusId) : null,
-          executorId: executorId ? Number(executorId) : null,
-          creatorId: req.user.id,
-        };
-
-        console.log('---post tasks taskData---', taskData);
-
         const task = await app.objection.models.task.fromJson(taskData);
         await app.objection.models.task.query().insert(task);
 
@@ -73,24 +81,34 @@ export default (app) => {
         const statuses = await app.objection.models.status.query();
 
         req.flash('error', i18next.t('flash.tasks.create.error'));
-        reply.render('tasks/new', { task: req.body.data, errors: err.data, executors, statuses });
+        reply.render('tasks/new', {
+          task: taskData,
+          errors: err.data,
+          executors,
+          statuses,
+        });
         return reply;
       }
     })
 
     .get('/tasks/:id/edit', { name: 'editTask' }, async (req, reply) => {
-      // console.log('- get edit user req.user -', req.user);
-      // console.log('- get edit status req.params -', req.params);
+      try {
+        console.log('- get edit user req.errr -', req);
+        // console.log('- get edit status req.params -', req.params);
 
-      const { id } = req.params;
-      const task = await app.objection.models.task.query().findById(id);
-      // console.log('-- task --', task);
+        const { id } = req.params;
+        const task = await app.objection.models.task.query().findById(id);
+        // console.log('-- task --', task);
 
-      const executors = await app.objection.models.user.query();
-      const statuses = await app.objection.models.status.query();
+        const executors = await app.objection.models.user.query();
+        const statuses = await app.objection.models.status.query();
 
-      reply.render('tasks/edit', { task, executors, statuses });
-      return reply;
+        reply.render('tasks/edit', { task, errors: {}, executors, statuses });
+        return reply;
+      } catch (err) {
+        console.log('catch err', err);
+        return reply;
+      }
     })
 
     .patch('/tasks/:id', { name: 'patchTask' }, async (req, reply) => {
@@ -118,10 +136,12 @@ export default (app) => {
         return reply;
       } catch (err) {
         console.log('---- patch task err -', err);
-        const task = { id, ...taskData };
+        // const task = { id, ...taskData };
 
         req.flash('error', 'task update error');
-        reply.render('/tasks/edit', { task, errors: err.data });
+        // reply.render('/tasks/edit', { task, errors: err.data });
+        req.errr = '123456';
+        reply.redirect(`/tasks/${id}/edit`);
         return reply;
       }
     })

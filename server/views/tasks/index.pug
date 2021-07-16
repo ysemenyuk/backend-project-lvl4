@@ -22,7 +22,7 @@ block content
             td= task.status.name
             td= task.creator.fullName()
             td= task.executor.fullName()
-            td= task.createdAt
+            td= task.createdAt.toLocaleString()
             td
               a(class='btn btn-link p-0' href=route('editTask', { id: task.id })) Edit
               form(action=route('deleteTask', { id: task.id }), method="post")

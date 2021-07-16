@@ -19,7 +19,7 @@ block content
           .col= task.status.name
         .row.p-1
           .col= 'createdAt'
-          .col= task.createdAt
+          .col= task.createdAt.toLocaleString()
         .row.p-1
           .col
             a(class='btn btn-link p-0' href=route('editTask', { id: task.id })) Edit

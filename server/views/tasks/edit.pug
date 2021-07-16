@@ -5,20 +5,26 @@ block header
 
 block content
   form(action=route('patchTask', { id: task.id }) method='post')
+
     +input(task, 'name', errors)(type="text")
+
     input(name="_method" type="hidden" value="patch")
 
     .form-group
         label(for="data_description")= 'task description'
         textarea.form-control(id="data_description" name="data[description]" rows="3")= task.description
+    
     .form-group
         label(for="data_statusId")= 'task statuses'
-        select.form-control(id="data_statusId" name="data[statusId]")
+        select(id="data_statusId" name="data[statusId]" class=`form-control ${!errors.statusId ? '' : 'is-invalid'}`)
           each status in statuses
             if status.id === task.statusId
               option(value=status.id selected) #{status.name}
             else
               option(value=status.id) #{status.name}
+        if errors.statusId
+          .form-control-feedback.invalid-feedback= errors.statusId.map(({ message }) => message).join('. ')
+
     .form-group
         label(for="data_executorId")= 'task executor'
         select.form-control(id="data_executorId" name="data[executorId]")
