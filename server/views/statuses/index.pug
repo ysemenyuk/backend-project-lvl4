@@ -1,21 +1,21 @@
 extends ../layouts/application.pug
 
 block content
-  a(href=route('newStatus'))= 'Create status'
+  a(href=route('newStatus') class="nav-link")= 'Create status'
   if statuses.length > 0
     table.table.table-hover
       thead
         tr
-          th= 'id'
-          th= 'name'
-          th= 'createdAt'
+          th= t('views.statuses.id')
+          th= t('views.statuses.name')
+          th= t('views.statuses.createdAt')
           th
       tbody
         each status in statuses
           tr
             td= status.id
             td= status.name
-            td= status.createdAt
+            td= status.createdAt.toLocaleString()
             td
               a(class='btn btn-link p-0' href=route('editStatus', { id: status.id })) Edit
               form(action=route('deleteStatus', { id: status.id }), method="post")

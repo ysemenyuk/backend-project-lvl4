@@ -3,6 +3,12 @@
 module.exports = {
   translation: {
     appName: 'Менеджер задач',
+    btns: {
+      submit: 'Отправить',
+      delete: 'Удалить',
+      edit: 'Изменить',
+      save: 'Сохранить',
+    },
     flash: {
       session: {
         create: {
@@ -24,6 +30,14 @@ module.exports = {
           error: 'Не удалось создать статус',
           success: 'Статус успешно зарегистрирован',
         },
+        update: {
+          error: 'Не удалось обновить статус',
+          success: 'Статус успешно обновлен',
+        },
+        delete: {
+          error: 'Не удалось удалить статус',
+          success: 'Статус успешно удален',
+        },
       },
       tasks: {
         create: {
@@ -32,6 +46,7 @@ module.exports = {
         },
       },
       authError: 'Доступ запрещён! Пожалуйста, авторизируйтесь.',
+      serverError: 'Ошибка сервера',
     },
     layouts: {
       application: {
@@ -74,7 +89,11 @@ module.exports = {
           more: 'Узнать Больше',
         },
       },
-      status: {},
+      statuses: {
+        id: 'ID',
+        name: 'Наименование',
+        createdAt: 'Дата создания',
+      },
     },
   },
 };

@@ -13,7 +13,7 @@ block content
           .col= task.creator.fullName()
         .row.p-1
           .col= 'executor'
-          .col= task.executor.fullName()
+          .col= task.executor ? task.executor.fullName() : '-'
         .row.p-1
           .col= 'status'
           .col= task.status.name

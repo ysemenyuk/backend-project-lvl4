@@ -17,6 +17,7 @@ block content
     .form-group
         label(for="data_statusId")= 'task statuses'
         select(id="data_statusId" name="data[statusId]" class=`form-control ${!errors.statusId ? '' : 'is-invalid'}`)
+          option
           each status in statuses
             if status.id === task.statusId
               option(value=status.id selected) #{status.name}
@@ -28,6 +29,7 @@ block content
     .form-group
         label(for="data_executorId")= 'task executor'
         select.form-control(id="data_executorId" name="data[executorId]")
+          option
           each executor in executors
             option(value=executor.id selected=executor.id === task.executorId) #{executor.fullName()}
 

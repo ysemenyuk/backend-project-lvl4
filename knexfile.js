@@ -33,12 +33,12 @@ module.exports = {
   //   useNullAsDefault: true,
   //   migrations,
   // },
-  production: {
-    client: 'sqlite3',
-    connection: {
-      filename: './database.sqlite',
-    },
-    useNullAsDefault: true,
-    migrations,
-  },
+  // production: {
+  //   client: 'sqlite3',
+  //   connection: {
+  //     filename: './database.sqlite',
+  //   },
+  //   useNullAsDefault: true,
+  //   migrations,
+  // },
 };

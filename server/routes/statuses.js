@@ -10,9 +10,17 @@ export default (app) => {
       { name: 'statuses', preValidation: app.authenticate },
       async (req, reply) => {
         // console.log('- get /statuses req -', req);
-        const statuses = await app.objection.models.status.query();
-        reply.render('statuses/index', { statuses });
-        return reply;
+        try {
+          const statuses = await app.objection.models.status.query();
+          reply.render('statuses/index', { statuses });
+          return reply;
+        } catch (error) {
+          // console.log('- get /statuses err -', err);
+
+          req.flash('error', i18next.t('flash.serverError'));
+          reply.redirect(app.reverse('root'));
+          return reply;
+        }
       }
     )
 
@@ -23,6 +31,8 @@ export default (app) => {
     })
 
     .post('/statuses', async (req, reply) => {
+      // console.log('- post /statuses req.body.data -', req.body.data);
+
       try {
         const status = await app.objection.models.status.fromJson(req.body.data);
         await app.objection.models.status.query().insert(status);
@@ -31,7 +41,7 @@ export default (app) => {
         reply.redirect(app.reverse('statuses'));
         return reply;
       } catch (err) {
-        console.log('- status create err -', err);
+        // console.log('- post /statuses err -', err);
 
         req.flash('error', i18next.t('flash.statuses.create.error'));
         reply.render('statuses/new', { status: req.body.data, errors: err.data });
@@ -40,13 +50,21 @@ export default (app) => {
     })
 
     .get('/statuses/:id/edit', { name: 'editStatus' }, async (req, reply) => {
-      // console.log('- get edit user req.user -', req.user);
+      // console.log('- get statuses/:id/edit req.params -', req.params);
 
       const { id } = req.params;
-      const status = await app.objection.models.status.query().findById(id);
+      try {
+        const status = await app.objection.models.status.query().findById(id);
 
-      reply.render('statuses/edit', { status });
-      return reply;
+        reply.render('statuses/edit', { status });
+        return reply;
+      } catch (err) {
+        // console.log('- get statuses/:id/edit err -', err);
+
+        req.flash('error', i18next.t('flash.serverError'));
+        reply.redirect(app.reverse('statuses'));
+        return reply;
+      }
     })
 
     .patch('/statuses/:id', { name: 'patchStatus' }, async (req, reply) => {
@@ -59,14 +77,14 @@ export default (app) => {
         const dbStatus = await app.objection.models.status.query().findById(id);
         await dbStatus.$query().patch(formStatus);
 
-        req.flash('info', 'status updated succes');
+        req.flash('info', i18next.t('flash.statuses.update.succes'));
         reply.redirect(app.reverse('statuses'));
         return reply;
       } catch (err) {
         // console.log('- user update err -', err);
         const status = { id, ...req.body.data };
 
-        req.flash('error', 'status update error');
+        req.flash('error', i18next.t('flash.statuses.update.error'));
         reply.render('/statuses/edit', { status, errors: err.data });
         return reply;
       }
@@ -79,13 +97,13 @@ export default (app) => {
       try {
         await app.objection.models.status.query().deleteById(id);
 
-        req.flash('info', 'status deleted succes');
+        req.flash('info', i18next.t('flash.statuses.delete.succes'));
         reply.redirect(app.reverse('statuses'));
         return reply;
       } catch (err) {
         // console.log('- status delete err -', err);
 
-        req.flash('error', 'status delete error');
+        req.flash('error', i18next.t('flash.statuses.delete.error'));
         reply.redirect(app.reverse('statuses'));
         return reply;
       }
