@@ -1,21 +1,21 @@
 extends ../layouts/application.pug
 
 block header
-  = 'edit task'
+  = t('views.tasks.edit.title')
 
 block content
   form(action=route('patchTask', { id: task.id }) method='post')
 
-    +input(task, 'name', errors)(type="text")
+    +input(task, 'name', errors, t('views.tasks.edit.name'))(type="text")
 
     input(name="_method" type="hidden" value="patch")
 
     .form-group
-        label(for="data_description")= 'task description'
+        label(for="data_description")= t('views.tasks.edit.description')
         textarea.form-control(id="data_description" name="data[description]" rows="3")= task.description
     
     .form-group
-        label(for="data_statusId")= 'task statuses'
+        label(for="data_statusId")= t('views.tasks.edit.statuses')
         select(id="data_statusId" name="data[statusId]" class=`form-control ${!errors.statusId ? '' : 'is-invalid'}`)
           option
           each status in statuses
@@ -27,11 +27,11 @@ block content
           .form-control-feedback.invalid-feedback= errors.statusId.map(({ message }) => message).join('. ')
 
     .form-group
-        label(for="data_executorId")= 'task executor'
+        label(for="data_executorId")= t('views.tasks.edit.executor')
         select.form-control(id="data_executorId" name="data[executorId]")
           option
           each executor in executors
             option(value=executor.id selected=executor.id === task.executorId) #{executor.fullName()}
 
     .form-group
-      input(class='btn btn-primary' type='submit' value='submit')
+      input(class='btn btn-primary' type='submit' value=t('views.tasks.edit.submit'))

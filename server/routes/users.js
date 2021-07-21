@@ -56,7 +56,7 @@ export default (app) => {
         // }
 
         if (user.id !== Number(id)) {
-          req.flash('error', 'You cannot edit or delete another user');
+          req.flash('error', i18next.t('flash.user.accessError'));
           reply.redirect(app.reverse('users'));
           return reply;
         }
@@ -84,14 +84,14 @@ export default (app) => {
           const dbUser = await app.objection.models.user.query().findById(id);
           await dbUser.$query().patch(formUser);
 
-          req.flash('info', 'user updated succes');
+          req.flash('info', i18next.t('flash.users.update.succes'));
           reply.redirect(app.reverse('users'));
           return reply;
         } catch (err) {
           // console.log('- user update err -', err);
           const user = { id, ...req.body.data };
 
-          req.flash('error', 'user update error');
+          req.flash('error', i18next.t('flash.users.update.error'));
           reply.render('/users/edit', { user, errors: err.data });
           return reply;
         }
@@ -108,31 +108,27 @@ export default (app) => {
         }),
       },
       async (req, reply) => {
-        console.log('- delete req.params -', req.params, req.user);
+        // console.log('- delete req.params -', req.params, req.user);
         const { id } = req.params;
         const { user } = req;
 
         if (user.id !== Number(id)) {
-          console.log('- user delete user.id !== Number(id) -', user.id !== Number(id));
-
-          req.flash('error', 'You cannot edit or delete another user');
+          req.flash('error', i18next.t('flash.users.accessError'));
           reply.redirect(app.reverse('users'));
           return reply;
         }
 
         try {
-          console.log('- user delete try -');
-
           await app.objection.models.user.query().deleteById(id);
 
           req.logOut();
-          req.flash('info', 'user deleted succes');
+          req.flash('info', i18next.t('flash.users.delete.succes'));
           reply.redirect(app.reverse('users'));
           return reply;
         } catch (err) {
           console.log('- user delete err -', err);
 
-          req.flash('error', 'user delete error');
+          req.flash('error', i18next.t('flash.users.delete.error'));
           reply.redirect(app.reverse('users'));
           return reply;
         }

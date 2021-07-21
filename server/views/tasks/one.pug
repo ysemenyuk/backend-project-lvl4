@@ -9,20 +9,26 @@ block content
       hr
       .container
         .row.p-1
-          .col= 'creator'
+          .col= t('views.tasks.one.creator')
           .col= task.creator.fullName()
         .row.p-1
-          .col= 'executor'
+          .col= t('views.tasks.one.executor')
           .col= task.executor ? task.executor.fullName() : '-'
         .row.p-1
-          .col= 'status'
+          .col= t('views.tasks.one.status')
           .col= task.status.name
         .row.p-1
-          .col= 'createdAt'
+          .col= t('views.tasks.one.createdAt')
           .col= task.createdAt.toLocaleString()
         .row.p-1
           .col
-            a(class='btn btn-link p-0' href=route('editTask', { id: task.id })) Edit
+            h6= t('views.tasks.one.labels')
+            ul
+              each label in task.labels
+                li  #{label.name}
+        .row.p-1
+          .col
+            a(class='btn btn-link p-0' href=route('editTask', { id: task.id }))= t('views.tasks.one.edit')
             form(action=route('deleteTask', { id: task.id }), method="post")
               input(name="_method" type="hidden" value="delete")
-              input(class='btn btn-link p-0' type='submit' value='Delete')
+              input(class='btn btn-link p-0' type='submit' value= t('views.tasks.one.delete'))

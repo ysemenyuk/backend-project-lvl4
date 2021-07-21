@@ -6,68 +6,77 @@ import _ from 'lodash';
 export default (app) => {
   app
 
-    .get('/tasks', { name: 'tasks', preValidation: app.authenticate }, async (req, reply) => {
-      try {
-        const tasks = await app.objection.models.task
-          .query()
-          .withGraphJoined('[status, creator, executor]');
+    .get(
+      '/tasks',
+      { name: 'tasks', preValidation: app.authenticate },
+      async (req, reply) => {
+        try {
+          const tasks = await app.objection.models.task
+            .query()
+            .withGraphJoined('[status, creator, executor]');
 
-        // console.log('- get tasks tasks -', tasks);
+          // console.log('- get tasks tasks -', tasks);
 
-        reply.render('tasks/index', { tasks });
-        return reply;
-      } catch (err) {
-        // console.log('- catch get tasks err -', err);
+          reply.render('tasks/index', { tasks });
+          return reply;
+        } catch (err) {
+          // console.log('- catch get tasks err -', err);
 
-        req.flash('error', 'server error');
-        reply.redirect(app.reverse('root'));
-        return reply;
+          req.flash('error', i18next.t('flash.serverError'));
+          reply.redirect(app.reverse('root'));
+          return reply;
+        }
       }
-    })
+    )
 
-    .get('/tasks/:id', { name: 'task', preValidation: app.authenticate }, async (req, reply) => {
-      // console.log('- get task req -', req);
-      const { id } = req.params;
+    .get(
+      '/tasks/:id',
+      { name: 'task', preValidation: app.authenticate },
+      async (req, reply) => {
+        // console.log('- get task req -', req);
+        const { id } = req.params;
 
-      try {
-        const task = await app.objection.models.task
-          .query()
-          .findById(id)
-          .withGraphJoined('[status, creator, executor]');
+        try {
+          const task = await app.objection.models.task
+            .query()
+            .findById(id)
+            .withGraphJoined('[status, creator, executor, labels]');
 
-        // console.log('- get task task -', task);
+          console.log('- get task task -', task);
 
-        reply.render('tasks/one', { task });
-        return reply;
-      } catch (err) {
-        // console.log('- get task err -', err);
+          reply.render('tasks/one', { task });
+          return reply;
+        } catch (err) {
+          // console.log('- get task err -', err);
 
-        req.flash('error', 'server error');
-        reply.redirect(app.reverse('tasks'));
-        return reply;
+          req.flash('error', i18next.t('flash.serverError'));
+          reply.redirect(app.reverse('tasks'));
+          return reply;
+        }
       }
-    })
+    )
 
     .get('/tasks/new', { name: 'newTask' }, async (req, reply) => {
       try {
         const executors = await app.objection.models.user.query();
         const statuses = await app.objection.models.status.query();
+        const labels = await app.objection.models.label.query();
 
-        reply.render('tasks/new', { task: {}, errors: {}, executors, statuses });
+        reply.render('tasks/new', { task: {}, errors: {}, executors, statuses, labels });
         return reply;
       } catch (err) {
         // console.log('- get task/new err -', err);
 
-        req.flash('error', 'server error');
+        req.flash('error', i18next.t('flash.serverError'));
         reply.redirect(app.reverse('tasks'));
         return reply;
       }
     })
 
     .post('/tasks', async (req, reply) => {
-      // console.log('---post tasks req.body.data---', req.body.data);
+      console.log('---post tasks req.body.data---', req.body.data);
 
-      const { name, description, statusId, executorId } = req.body.data;
+      const { name, description, statusId, executorId, labels } = req.body.data;
 
       const formData = {
         name,
@@ -77,33 +86,42 @@ export default (app) => {
         creatorId: req.user.id,
       };
 
-      // console.log('- post tasks formData -', formData);
+      console.log('- post tasks formData -', formData);
 
       const taskData = _.omitBy(formData, _.isNull);
-      // console.log('- post tasks taskData -', taskData);
+      console.log('- post tasks taskData -', taskData);
 
       let task;
       let executors;
       let statuses;
+      let lbls;
 
       try {
         executors = await app.objection.models.user.query();
         statuses = await app.objection.models.status.query();
+        lbls = await app.objection.models.label.query();
+
         task = await app.objection.models.task.fromJson(taskData);
 
         await app.objection.models.task.query().insert(task);
-
-        // console.log('- post tasks task -', task);
+        await task.$relatedQuery('labels').relate(labels);
+        console.log('- post tasks task -', task);
 
         req.flash('info', i18next.t('flash.tasks.create.success'));
         reply.redirect(app.reverse('tasks'));
         return reply;
       } catch (err) {
-        // console.log('- post tasks err -', err);
-        // console.log('- post tasks err.data -', err.data);
+        console.log('- post tasks err -', err);
+        console.log('- post tasks err.data -', err.data);
 
         req.flash('error', i18next.t('flash.tasks.create.error'));
-        reply.render('tasks/new', { task: formData, errors: err.data, executors, statuses });
+        reply.render('tasks/new', {
+          task: req.body.data,
+          errors: err.data,
+          executors,
+          statuses,
+          labels: lbls,
+        });
         return reply;
       }
     })

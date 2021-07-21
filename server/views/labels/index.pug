@@ -1,0 +1,24 @@
+extends ../layouts/application.pug
+
+block content
+  a(href=route('newLabel') class="nav-link")= t('views.labels.index.create')
+  if labels.length > 0
+    table.table.table-hover
+      thead
+        tr
+          th= t('views.labels.index.id')
+          th= t('views.labels.index.name')
+          th= t('views.labels.index.createdAt')
+          th
+      tbody
+        each label in labels
+          tr
+            td= label.id
+            td= label.name
+            td= label.createdAt.toLocaleString()
+            td
+              a(class='btn btn-link p-0' href=route('editLabel', { id: label.id }))= t('views.labels.index.edit')
+              form(action=route('deleteLabel', { id: label.id }), method="post")
+                input(name="_method" type="hidden" value="delete")
+                input(class='btn btn-link p-0' type='submit' value= t('views.labels.index.delete'))
+

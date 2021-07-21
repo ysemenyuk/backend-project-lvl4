@@ -4,10 +4,10 @@ block content
   table.table.table-striped
     thead
       tr
-        th= t('views.users.id')
-        th= t('views.users.fullName')
-        th= t('views.users.email')
-        th= t('views.users.createdAt')
+        th= t('views.users.index.id')
+        th= t('views.users.index.fullName')
+        th= t('views.users.index.email')
+        th= t('views.users.index.createdAt')
         th
     tbody
       each user in users
@@ -17,7 +17,7 @@ block content
           td= user.email
           td= formatDate(user.createdAt)
           td 
-            a(class='btn btn-link p-0' href=route('editUser', { id: user.id })) Edit
+            a(class='btn btn-link p-0' href=route('editUser', { id: user.id }))= t('views.users.index.edit')
             form(action=route('deleteUser', { id: user.id }), method="post")
               input(name="_method" type="hidden" value="delete")
-              input(class='btn btn-link p-0' type='submit' value='Delete')
+              input(class='btn btn-link p-0' type='submit' value=t('views.users.index.delete'))

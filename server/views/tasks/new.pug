@@ -1,35 +1,38 @@
 extends ../layouts/application.pug
 
 block header
-  = 'New task'
+  = t('views.tasks.new.title')
 
 block content
   +formFor()(action=route('tasks') method='post')
 
-    +input(task, 'name', errors)(type="text")
+    +input(task, 'name', errors, t('views.tasks.new.name'))(type="text")
 
     .form-group
-        label(for="data_description")= 'task description'
+        label(for="data_description")= t('views.tasks.new.description')
         textarea(id="data_description" name="data[description]" class='form-control' rows="3")= task.description || ''
 
     .form-group
-        label(for="data_statusId")= 'task statuses'
+        label(for="data_statusId")= t('views.tasks.new.status')
         select(id="data_statusId" name="data[statusId]" class=`form-control ${!errors.statusId ? '' : 'is-invalid'}`)
           option
           each status in statuses
-            if status.id === task.statusId
-              option(value=status.id selected) #{status.name}
-            else
-              option(value=status.id) #{status.name}
+            option(value=status.id selected=status.id === task.statusId) #{status.name}
         if errors.statusId
           .form-control-feedback.invalid-feedback= errors.statusId.map(({ message }) => message).join('. ')
 
     .form-group
-        label(for="data_executorId")= 'task executor'
+        label(for="data_executorId")= t('views.tasks.new.executor')
         select(id="data_executorId" name="data[executorId]" class='form-control')
           option
           each executor in executors
             option(value=executor.id selected=executor.id === task.executorId) #{executor.fullName()}
+
+    .form-group
+        label(for="data_labels")= t('views.tasks.new.labels')
+        select(id="data_labels" name="data[labels]" class='form-control' multiple)
+          each label in labels
+            option(value=label.id selected=tasks && tasks.labels.includes(label.id)) #{label.name}
     
-    +submit(task)(value='submit')
+    +submit(task)(value=t('views.tasks.new.submit'))
 

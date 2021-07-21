@@ -2,13 +2,6 @@
 
 module.exports = {
   translation: {
-    appName: 'Менеджер задач',
-    btns: {
-      submit: 'Отправить',
-      delete: 'Удалить',
-      edit: 'Изменить',
-      save: 'Сохранить',
-    },
     flash: {
       session: {
         create: {
@@ -20,9 +13,18 @@ module.exports = {
         },
       },
       users: {
+        accessError: 'Вы не можете редактировать или удалять другого пользователя',
         create: {
           error: 'Не удалось зарегистрировать',
           success: 'Пользователь успешно зарегистрирован',
+        },
+        update: {
+          error: 'Не удалось обновить пользователя',
+          success: 'Пользователь успешно обновлен',
+        },
+        delete: {
+          error: 'Не удалось удалить пользователя',
+          success: 'Пользователь успешно удален',
         },
       },
       statuses: {
@@ -39,10 +41,33 @@ module.exports = {
           success: 'Статус успешно удален',
         },
       },
+      labels: {
+        create: {
+          error: 'Не удалось создать метку',
+          success: 'Метка успешно зарегистрирована',
+        },
+        update: {
+          error: 'Не удалось обновить метку',
+          success: 'Метка успешно обновлена',
+        },
+        delete: {
+          error: 'Не удалось удалить метку',
+          success: 'Метка успешно удалена',
+        },
+      },
       tasks: {
+        accessError: 'Задачу может удалить только её автор.',
         create: {
           error: 'Не удалось создать задачу',
-          success: 'Статус успешно зарегистрирован',
+          success: 'Задача успешно зарегистрирован',
+        },
+        update: {
+          error: 'Не удалось обновить задачу',
+          success: 'Задача успешно обновлен',
+        },
+        delete: {
+          error: 'Не удалось удалить задачу',
+          success: 'Задача успешно удален',
         },
       },
       authError: 'Доступ запрещён! Пожалуйста, авторизируйтесь.',
@@ -50,9 +75,11 @@ module.exports = {
     },
     layouts: {
       application: {
+        title: 'Менеджер задач',
         users: 'Пользователи',
         statuses: 'Статусы',
         tasks: 'Задачи',
+        labels: 'Метки',
         signIn: 'Вход',
         signUp: 'Регистрация',
         signOut: 'Выход',
@@ -61,24 +88,35 @@ module.exports = {
     views: {
       session: {
         new: {
-          signIn: 'Вход',
+          title: 'Вход',
+          email: 'Email',
+          password: 'Пароль',
           submit: 'Войти',
         },
       },
       users: {
-        id: 'ID',
-        fullName: 'Полное имя',
-        firstName: 'Имя',
-        secondName: 'Фамилия',
-        password: 'Пароль',
-        email: 'Email',
-        createdAt: 'Дата создания',
+        index: {
+          id: 'ID',
+          fullName: 'Полное имя',
+          email: 'Email',
+          createdAt: 'Дата создания',
+          delete: 'Удалить',
+          edit: 'Изменить',
+        },
         new: {
-          newUser: 'Регистрация',
+          title: 'Регистрация',
+          firstName: 'Имя',
+          lastName: 'Фамилия',
+          email: 'Email',
+          password: 'Пароль',
           submit: 'Сохранить',
         },
         edit: {
-          editUser: 'Изменение пользователя',
+          title: 'Изменение пользователя',
+          firstName: 'Имя',
+          lastName: 'Фамилия',
+          email: 'Email',
+          password: 'Пароль',
           submit: 'Изменить',
         },
       },
@@ -90,9 +128,84 @@ module.exports = {
         },
       },
       statuses: {
-        id: 'ID',
-        name: 'Наименование',
-        createdAt: 'Дата создания',
+        index: {
+          id: 'ID',
+          name: 'Наименование',
+          createdAt: 'Дата создания',
+          create: 'Создать статус',
+          delete: 'Удалить',
+          edit: 'Изменить',
+        },
+        new: {
+          title: 'Создание статуса',
+          name: 'Наименование',
+          submit: 'Создать',
+        },
+        edit: {
+          title: 'Изменение статуса',
+          name: 'Наименование',
+          submit: 'Изменить',
+        },
+      },
+      labels: {
+        index: {
+          id: 'ID',
+          name: 'Наименование',
+          createdAt: 'Дата создания',
+          create: 'Создать метку',
+          delete: 'Удалить',
+          edit: 'Изменить',
+        },
+        new: {
+          title: 'Создание метки',
+          name: 'Наименование',
+          submit: 'Создать',
+        },
+        edit: {
+          title: 'Изменение метки',
+          name: 'Наименование',
+          submit: 'Изменить',
+        },
+      },
+      tasks: {
+        index: {
+          id: 'ID',
+          name: 'Наименование',
+          status: 'Статус',
+          creator: 'Автор',
+          executor: 'Исполнитель',
+          createdAt: 'Дата создания',
+          create: 'Создать задачу',
+          delete: 'Удалить',
+          edit: 'Изменить',
+        },
+        new: {
+          title: 'Создание задачи',
+          name: 'Наименование',
+          description: 'Описание',
+          status: 'Статус',
+          executor: 'Исполнитель',
+          labels: 'Метки',
+          submit: 'Создать',
+        },
+        edit: {
+          title: 'Изменение задачи',
+          name: 'Наименование',
+          description: 'Описание',
+          status: 'Статус',
+          executor: 'Исполнитель',
+          labels: 'Метки',
+          submit: 'Изменить',
+        },
+        one: {
+          creator: 'Автор',
+          executor: 'Исполнитель',
+          status: 'Статус',
+          createdAt: 'Дата создания',
+          labels: 'Метки',
+          edit: 'Изменить',
+          delete: 'Удалить',
+        },
       },
     },
   },

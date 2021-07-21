@@ -50,6 +50,18 @@ export default class Task extends Model {
           to: 'statuses.id',
         },
       },
+      labels: {
+        relation: Model.ManyToManyRelation,
+        modelClass: path.join(__dirname, 'Label.js'),
+        join: {
+          from: 'tasks.id',
+          through: {
+            from: 'tasks_labels.task_id',
+            to: 'tasks_labels.label_id',
+          },
+          to: 'labels.id',
+        },
+      },
     };
   }
 }

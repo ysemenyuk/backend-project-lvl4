@@ -1,17 +1,17 @@
 extends ../layouts/application.pug
 
 block content
-  a(href=route('newTask'))= 'Create task'
+  a(href=route('newTask'))= t('views.tasks.index.create')
   if tasks.length > 0
     table.table.table-hover
       thead
         tr
-          th= 'id'
-          th= 'name'
-          th= 'status'
-          th= 'creator'
-          th= 'executor'
-          th= 'createdAt'
+          th= t('views.tasks.index.id')
+          th= t('views.tasks.index.name')
+          th= t('views.tasks.index.status')
+          th= t('views.tasks.index.creator')
+          th= t('views.tasks.index.executor')
+          th= t('views.tasks.index.createdAt')
           th
       tbody
         each task in tasks
@@ -24,7 +24,7 @@ block content
             td= task.executor ? task.executor.fullName() : '-'
             td= task.createdAt.toLocaleString()
             td
-              a(class='btn btn-link p-0' href=route('editTask', { id: task.id })) Edit
+              a(class='btn btn-link p-0' href=route('editTask', { id: task.id }))= t('views.tasks.index.edit')
               form(action=route('deleteTask', { id: task.id }), method="post")
                 input(name="_method" type="hidden" value="delete")
-                input(class='btn btn-link p-0' type='submit' value='Delete')
+                input(class='btn btn-link p-0' type='submit' value=t('views.tasks.index.delete'))
