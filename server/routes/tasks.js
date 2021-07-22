@@ -10,17 +10,36 @@ export default (app) => {
       '/tasks',
       { name: 'tasks', preValidation: app.authenticate },
       async (req, reply) => {
+        // console.log('- get tasks req -', req);
+
+        console.log('- get tasks req.query -', req.query);
+        console.log('- get tasks req.params -', req.params);
+        const { models, knex } = app.objection;
+        const { user } = req;
+
+        const filter = { ...req.query };
+        console.log('filter', filter);
+
         try {
-          const tasks = await app.objection.models.task
+          const tasks = await models.task
             .query()
-            .withGraphJoined('[status, creator, executor]');
+            .withGraphFetched('[status, creator, executor, labels]')
+            .modify('filterStatus', filter.status)
+            .modify('filterExecutor', filter.executor)
+            .modify('filterLabel', filter.label, knex)
+            .modify('filterCreator', filter.isCreatorUser, user.id)
+            .orderBy('id');
+
+          const executors = await models.user.query();
+          const statuses = await models.status.query();
+          const labels = await models.label.query();
 
           // console.log('- get tasks tasks -', tasks);
 
-          reply.render('tasks/index', { tasks });
+          reply.render('tasks/index', { filter, tasks, executors, statuses, labels });
           return reply;
         } catch (err) {
-          // console.log('- catch get tasks err -', err);
+          console.log('- catch get tasks err -', err);
 
           req.flash('error', i18next.t('flash.serverError'));
           reply.redirect(app.reverse('root'));
@@ -42,7 +61,7 @@ export default (app) => {
             .findById(id)
             .withGraphJoined('[status, creator, executor, labels]');
 
-          console.log('- get task task -', task);
+          // console.log('- get task task -', task);
 
           reply.render('tasks/one', { task });
           return reply;
@@ -74,38 +93,42 @@ export default (app) => {
     })
 
     .post('/tasks', async (req, reply) => {
-      console.log('---post tasks req.body.data---', req.body.data);
+      console.log('- post task req.body.data', req.body.data);
 
-      const { name, description, statusId, executorId, labels } = req.body.data;
+      const { models } = app.objection;
+      const { name, description, statusId, executorId } = req.body.data;
+      const formLabels = req.body.data.labels;
 
-      const formData = {
-        name,
-        description,
-        statusId: statusId ? Number(statusId) : null,
-        executorId: executorId ? Number(executorId) : null,
-        creatorId: req.user.id,
-      };
+      const formData = _.omitBy(
+        {
+          name,
+          description,
+          statusId: statusId ? Number(statusId) : null,
+          executorId: executorId ? Number(executorId) : null,
+          creatorId: req.user.id,
+        },
+        _.isNull
+      );
 
-      console.log('- post tasks formData -', formData);
+      console.log('- patch tasks formData -', formData);
 
-      const taskData = _.omitBy(formData, _.isNull);
-      console.log('- post tasks taskData -', taskData);
-
-      let task;
       let executors;
       let statuses;
-      let lbls;
+      let labels;
 
       try {
-        executors = await app.objection.models.user.query();
-        statuses = await app.objection.models.status.query();
-        lbls = await app.objection.models.label.query();
+        executors = await models.user.query();
+        statuses = await models.status.query();
+        labels = await models.label.query();
 
-        task = await app.objection.models.task.fromJson(taskData);
+        const task = await app.objection.models.task.fromJson(formData);
 
-        await app.objection.models.task.query().insert(task);
-        await task.$relatedQuery('labels').relate(labels);
-        console.log('- post tasks task -', task);
+        await app.objection.models.task.transaction(async (trx) => {
+          await app.objection.models.task.query(trx).insert(task);
+          await task.$relatedQuery('labels', trx).relate(formLabels);
+
+          console.log('- post tasks task -', task);
+        });
 
         req.flash('info', i18next.t('flash.tasks.create.success'));
         reply.redirect(app.reverse('tasks'));
@@ -120,7 +143,7 @@ export default (app) => {
           errors: err.data,
           executors,
           statuses,
-          labels: lbls,
+          labels,
         });
         return reply;
       }
@@ -131,13 +154,18 @@ export default (app) => {
       const { id } = req.params;
 
       try {
-        const task = await app.objection.models.task.query().findById(id);
+        const task = await app.objection.models.task
+          .query()
+          .findById(id)
+          .withGraphJoined('[labels]');
+
         console.log('- get task/:id/edit task -', task);
 
         const executors = await app.objection.models.user.query();
         const statuses = await app.objection.models.status.query();
+        const labels = await app.objection.models.label.query();
 
-        reply.render('tasks/edit', { task, errors: {}, executors, statuses });
+        reply.render('tasks/edit', { task, errors: {}, executors, statuses, labels });
         return reply;
       } catch (err) {
         // console.log('- get task/:id/edit catch err -', err);
@@ -149,57 +177,83 @@ export default (app) => {
     })
 
     .patch('/tasks/:id', { name: 'patchTask' }, async (req, reply) => {
-      // console.log('- patch task req.params -', req.params);
-      // console.log('- patch task req.body.data', req.body.data);
+      console.log('- patch task req.params -', req.params);
+      console.log('- patch task req.body.data', req.body.data);
+
+      const { models } = app.objection;
 
       const { id } = req.params;
       const { name, description, statusId, executorId } = req.body.data;
+      const formLabels = req.body.data.labels;
 
-      const formData = {
-        name,
-        description,
-        statusId: statusId ? Number(statusId) : null,
-        executorId: executorId ? Number(executorId) : null,
-        creatorId: req.user.id,
-      };
+      const formData = _.omitBy(
+        {
+          name,
+          description,
+          statusId: statusId ? Number(statusId) : null,
+          executorId: executorId ? Number(executorId) : null,
+          creatorId: req.user.id,
+        },
+        _.isNull
+      );
 
-      console.log('- post tasks formData -', formData);
+      console.log('- patch tasks formData -', formData);
 
-      const taskData = _.omitBy(formData, _.isNull);
-      // console.log('- post tasks taskData -', taskData);
-
-      let formTask;
       let executors;
       let statuses;
+      let labels;
 
       try {
-        executors = await app.objection.models.user.query();
-        statuses = await app.objection.models.status.query();
+        executors = await models.user.query();
+        statuses = await models.status.query();
+        labels = await models.label.query();
 
-        formTask = await app.objection.models.task.fromJson(taskData);
+        const formTask = await models.task.fromJson(formData);
+        const dbTask = await models.task.query().findById(id);
 
-        const dbTask = await app.objection.models.task.query().findById(id);
-        await dbTask.$query().patch(formTask);
+        await models.task.transaction(async (trx) => {
+          await dbTask.$query(trx).patch(formTask);
+          await dbTask.$relatedQuery('labels', trx).unrelate();
+          await dbTask.$relatedQuery('labels', trx).relate(formLabels);
 
-        req.flash('info', 'task updated succes');
+          console.log('- patch tasks dbTask -', dbTask);
+        });
+
+        req.flash('info', i18next.t('flash.tasks.update.success'));
         reply.redirect(app.reverse('tasks'));
         return reply;
       } catch (err) {
-        // console.log('- patch task err -', err);
-        const task = { id, ...formData };
-
-        req.flash('error', 'task update error');
-        reply.render('/tasks/edit', { task, errors: err.data, executors, statuses });
+        console.log('- patch task err -', err);
+        const task = {
+          id,
+          ...formData,
+          labels: labels.filter((i) => formLabels.includes(i.id)),
+        };
+        console.log('- patch task catch error task -', task);
+        req.flash('error', i18next.t('flash.tasks.update.error'));
+        reply.render('/tasks/edit', {
+          task,
+          errors: err.data,
+          executors,
+          statuses,
+          labels,
+        });
         return reply;
       }
     })
 
     .delete('/tasks/:id', { name: 'deleteTask' }, async (req, reply) => {
       // console.log('- delete task req.params -', req.params);
+      const { models } = app.objection;
       const { id } = req.params;
 
       try {
-        await app.objection.models.task.query().deleteById(id);
+        await models.task.transaction(async (trx) => {
+          await models.task.relatedQuery('labels', trx).for(id).unrelate();
+          await models.task.query(trx).deleteById(id);
+
+          // console.log('- patch tasks dbTask -', dbTask);
+        });
 
         req.flash('info', 'task deleted succes');
         reply.redirect(app.reverse('tasks'));
