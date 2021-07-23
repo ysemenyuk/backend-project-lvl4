@@ -3,16 +3,16 @@
 import getApp from '../server/index.js';
 import testData from './helpers/index.js';
 
-describe('test statuses CRUD', () => {
+describe('test labels CRUD', () => {
   let app;
   let knex;
   let models;
-  let status;
+  let label;
 
   let cookie;
 
   const userData = testData.getUser();
-  const statusData = testData.getStatus();
+  const labelData = testData.getLabel();
 
   beforeAll(async () => {
     app = await getApp();
@@ -23,7 +23,7 @@ describe('test statuses CRUD', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
     await models.user.query().insert(userData);
-    status = await models.status.query().insert(statusData);
+    label = await models.label.query().insert(labelData);
 
     const { email, password } = userData;
 
@@ -43,7 +43,7 @@ describe('test statuses CRUD', () => {
   it('index', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: app.reverse('statuses'),
+      url: app.reverse('labels'),
       cookies: cookie,
     });
 
@@ -53,7 +53,7 @@ describe('test statuses CRUD', () => {
   it('new', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: app.reverse('newStatus'),
+      url: app.reverse('newLabel'),
       cookies: cookie,
     });
 
@@ -61,31 +61,31 @@ describe('test statuses CRUD', () => {
   });
 
   it('create', async () => {
-    const newStatus = testData.getStatus();
+    const newLabel = testData.getLabel();
 
     const response = await app.inject({
       method: 'POST',
-      url: app.reverse('statuses'),
+      url: app.reverse('labels'),
       cookies: cookie,
       payload: {
-        data: newStatus,
+        data: newLabel,
       },
     });
 
     expect(response.statusCode).toBe(302);
 
-    const createdStatus = await models.status.query().findOne({ name: newStatus.name });
+    const createdLabel = await models.label.query().findOne({ name: newLabel.name });
 
-    expect(createdStatus).toMatchObject(newStatus);
+    expect(createdLabel).toMatchObject(newLabel);
   });
 
   it('update', async () => {
-    const { id } = status;
-    const updateForm = { name: 'newStatusName' };
+    const { id } = label;
+    const updateForm = { name: 'newname' };
 
     const response = await app.inject({
       method: 'PATCH',
-      url: `/statuses/${id}`,
+      url: `/labels/${id}`,
       cookies: cookie,
       payload: {
         data: updateForm,
@@ -94,22 +94,22 @@ describe('test statuses CRUD', () => {
 
     expect(response.statusCode).toBe(302);
 
-    const updatedStatus = await models.status.query().findOne({ name: updateForm.name });
-    expect(updatedStatus).toMatchObject(updateForm);
+    const updatedLabel = await models.label.query().findOne({ name: updateForm.name });
+    expect(updatedLabel).toMatchObject(updateForm);
   });
 
   it('delete', async () => {
-    const { id } = status;
+    const { id } = label;
 
     const response = await app.inject({
       method: 'DELETE',
-      url: `/statuses/${id}`,
+      url: `/labels/${id}`,
     });
 
     expect(response.statusCode).toBe(302);
 
-    const deletedStatus = await models.status.query().findById(id);
-    expect(deletedStatus).toBeUndefined();
+    const deletedLabel = await models.label.query().findById(id);
+    expect(deletedLabel).toBeUndefined();
   });
 
   afterEach(async () => {

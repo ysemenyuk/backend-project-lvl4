@@ -6,74 +6,66 @@ import _ from 'lodash';
 export default (app) => {
   app
 
-    .get(
-      '/tasks',
-      { name: 'tasks', preValidation: app.authenticate },
-      async (req, reply) => {
-        // console.log('- get tasks req -', req);
+    .get('/tasks', { name: 'tasks', preValidation: app.authenticate }, async (req, reply) => {
+      // console.log('- get tasks req -', req);
 
-        console.log('- get tasks req.query -', req.query);
-        console.log('- get tasks req.params -', req.params);
-        const { models, knex } = app.objection;
-        const { user } = req;
+      console.log('- get tasks req.query -', req.query);
+      console.log('- get tasks req.params -', req.params);
+      const { models, knex } = app.objection;
+      const { user } = req;
 
-        const filter = { ...req.query };
-        console.log('filter', filter);
+      const filter = { ...req.query };
+      console.log('filter', filter);
 
-        try {
-          const tasks = await models.task
-            .query()
-            .withGraphFetched('[status, creator, executor, labels]')
-            .modify('filterStatus', filter.status)
-            .modify('filterExecutor', filter.executor)
-            .modify('filterLabel', filter.label, knex)
-            .modify('filterCreator', filter.isCreatorUser, user.id)
-            .orderBy('id');
+      try {
+        const tasks = await models.task
+          .query()
+          .withGraphFetched('[status, creator, executor, labels]')
+          .modify('filterStatus', filter.status)
+          .modify('filterExecutor', filter.executor)
+          .modify('filterLabel', filter.label, knex)
+          .modify('filterCreator', filter.isCreatorUser, user.id)
+          .orderBy('id');
 
-          const executors = await models.user.query();
-          const statuses = await models.status.query();
-          const labels = await models.label.query();
+        const executors = await models.user.query();
+        const statuses = await models.status.query();
+        const labels = await models.label.query();
 
-          // console.log('- get tasks tasks -', tasks);
+        // console.log('- get tasks tasks -', tasks);
 
-          reply.render('tasks/index', { filter, tasks, executors, statuses, labels });
-          return reply;
-        } catch (err) {
-          console.log('- catch get tasks err -', err);
+        reply.render('tasks/index', { filter, tasks, executors, statuses, labels });
+        return reply;
+      } catch (err) {
+        console.log('- catch get tasks err -', err);
 
-          req.flash('error', i18next.t('flash.serverError'));
-          reply.redirect(app.reverse('root'));
-          return reply;
-        }
+        req.flash('error', i18next.t('flash.serverError'));
+        reply.redirect(app.reverse('root'));
+        return reply;
       }
-    )
+    })
 
-    .get(
-      '/tasks/:id',
-      { name: 'task', preValidation: app.authenticate },
-      async (req, reply) => {
-        // console.log('- get task req -', req);
-        const { id } = req.params;
+    .get('/tasks/:id', { name: 'task', preValidation: app.authenticate }, async (req, reply) => {
+      // console.log('- get task req -', req);
+      const { id } = req.params;
 
-        try {
-          const task = await app.objection.models.task
-            .query()
-            .findById(id)
-            .withGraphJoined('[status, creator, executor, labels]');
+      try {
+        const task = await app.objection.models.task
+          .query()
+          .findById(id)
+          .withGraphJoined('[status, creator, executor, labels]');
 
-          // console.log('- get task task -', task);
+        // console.log('- get task task -', task);
 
-          reply.render('tasks/one', { task });
-          return reply;
-        } catch (err) {
-          // console.log('- get task err -', err);
+        reply.render('tasks/one', { task });
+        return reply;
+      } catch (err) {
+        // console.log('- get task err -', err);
 
-          req.flash('error', i18next.t('flash.serverError'));
-          reply.redirect(app.reverse('tasks'));
-          return reply;
-        }
+        req.flash('error', i18next.t('flash.serverError'));
+        reply.redirect(app.reverse('tasks'));
+        return reply;
       }
-    )
+    })
 
     .get('/tasks/new', { name: 'newTask' }, async (req, reply) => {
       try {
@@ -110,7 +102,7 @@ export default (app) => {
         _.isNull
       );
 
-      console.log('- patch tasks formData -', formData);
+      // console.log('- patch tasks formData -', formData);
 
       let executors;
       let statuses;
@@ -127,7 +119,7 @@ export default (app) => {
           await app.objection.models.task.query(trx).insert(task);
           await task.$relatedQuery('labels', trx).relate(formLabels);
 
-          console.log('- post tasks task -', task);
+          // console.log('- post tasks task -', task);
         });
 
         req.flash('info', i18next.t('flash.tasks.create.success'));

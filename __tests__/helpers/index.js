@@ -12,4 +12,13 @@ const getStatus = () => ({
   name: faker.random.word(),
 });
 
-export default { getUser, getStatus };
+const getLabel = () => ({
+  name: faker.random.word(),
+});
+
+const getTask = () => ({
+  name: faker.random.word(),
+  description: faker.random.word(),
+});
+
+export default { getUser, getStatus, getLabel, getTask };

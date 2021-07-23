@@ -12,6 +12,7 @@ export default (app) => {
         // console.log('- get /statuses req -', req);
         try {
           const statuses = await app.objection.models.status.query();
+          // const statuses = await statusRepository.findAll();
           reply.render('statuses/index', { statuses });
           return reply;
         } catch (error) {

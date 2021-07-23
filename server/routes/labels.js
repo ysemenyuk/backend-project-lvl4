@@ -5,24 +5,20 @@ import i18next from 'i18next';
 export default (app) => {
   app
 
-    .get(
-      '/labels',
-      { name: 'labels', preValidation: app.authenticate },
-      async (req, reply) => {
-        // console.log('- get /labels req -', req);
-        try {
-          const labels = await app.objection.models.label.query();
-          reply.render('labels/index', { labels });
-          return reply;
-        } catch (error) {
-          // console.log('- get /labels err -', err);
+    .get('/labels', { name: 'labels', preValidation: app.authenticate }, async (req, reply) => {
+      // console.log('- get /labels req -', req);
+      try {
+        const labels = await app.objection.models.label.query();
+        reply.render('labels/index', { labels });
+        return reply;
+      } catch (error) {
+        // console.log('- get /labels err -', err);
 
-          req.flash('error', i18next.t('flash.serverError'));
-          reply.redirect(app.reverse('root'));
-          return reply;
-        }
+        req.flash('error', i18next.t('flash.serverError'));
+        reply.redirect(app.reverse('root'));
+        return reply;
       }
-    )
+    })
 
     .get('/labels/new', { name: 'newLabel' }, (req, reply) => {
       // console.log('- get /labels/new req -', req);
@@ -36,6 +32,8 @@ export default (app) => {
       try {
         const label = await app.objection.models.label.fromJson(req.body.data);
         await app.objection.models.label.query().insert(label);
+
+        console.log(111, label);
 
         req.flash('info', i18next.t('flash.labels.create.success'));
         reply.redirect(app.reverse('labels'));
@@ -69,7 +67,7 @@ export default (app) => {
 
     .patch('/labels/:id', { name: 'patchLabel' }, async (req, reply) => {
       // console.log('- patch label req.params -', req.params);
-      // console.log('- patch label req.body -', req.body);
+      // console.log('- patch label req.body.data -', req.body.data);
       const { id } = req.params;
 
       try {
@@ -77,11 +75,11 @@ export default (app) => {
         const dblabel = await app.objection.models.label.query().findById(id);
         await dblabel.$query().patch(formlabel);
 
-        req.flash('info', i18next.t('flash.labels.update.succes'));
+        req.flash('info', i18next.t('flash.labels.update.success'));
         reply.redirect(app.reverse('labels'));
         return reply;
       } catch (err) {
-        // console.log('- user update err -', err);
+        console.log('- user update err -', err);
         const label = { id, ...req.body.data };
 
         req.flash('error', i18next.t('flash.labels.update.error'));

@@ -38,7 +38,7 @@ export default class Task extends Model {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['name', 'creatorId', 'statusId'],
+      required: ['name', 'statusId', 'creatorId'],
       properties: {
         id: { type: 'integer' },
         name: { type: 'string', minLength: 1, maxLength: 255 },
