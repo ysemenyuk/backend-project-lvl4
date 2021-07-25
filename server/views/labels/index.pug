@@ -8,6 +8,7 @@ block content
         tr
           th= t('views.labels.index.id')
           th= t('views.labels.index.name')
+          th= 'tasks'
           th= t('views.labels.index.createdAt')
           th
       tbody
@@ -15,6 +16,9 @@ block content
           tr
             td= label.id
             td= label.name
+            td
+              each task in label.tasks
+                div #{task.name}
             td= label.createdAt.toLocaleString()
             td
               a(class='btn btn-link p-0' href=route('editLabel', { id: label.id }))= t('views.labels.index.edit')

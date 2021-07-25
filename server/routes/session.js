@@ -3,14 +3,17 @@ import i18next from 'i18next';
 
 export default (app) => {
   app
+
     .get('/session/new', { name: 'newSession' }, (req, reply) => {
       const signInForm = {};
       reply.render('session/new', { signInForm });
     })
+
     .post(
       '/session',
       { name: 'session' },
       app.fp.authenticate('form', async (req, reply, err, user) => {
+        console.log(111, user);
         if (err) {
           return app.httpErrors.internalServerError(err);
         }
@@ -26,6 +29,7 @@ export default (app) => {
         return reply.redirect(app.reverse('root'));
       })
     )
+
     .delete('/session', (req, reply) => {
       req.logOut();
       req.flash('info', i18next.t('flash.session.delete.success'));

@@ -28,8 +28,8 @@ export default class Label extends unique(Model) {
         join: {
           from: 'labels.id',
           through: {
-            from: 'task_labels.label_id',
-            to: 'task_labels.task_id',
+            from: 'tasks_labels.label_id',
+            to: 'tasks_labels.task_id',
           },
           to: 'tasks.id',
         },

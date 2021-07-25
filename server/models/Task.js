@@ -1,5 +1,6 @@
 import { Model } from 'objection';
 import path from 'path';
+import _ from 'lodash';
 
 // import objectionUnique from 'objection-unique';
 // const unique = objectionUnique({ fields: ['name'] });
@@ -9,30 +10,17 @@ export default class Task extends Model {
     return 'tasks';
   }
 
-  static get modifiers() {
-    return {
-      defaultSelect(query) {
-        query();
+  static prepareData({ name, description, statusId, executorId }, userId) {
+    return _.omitBy(
+      {
+        name,
+        description,
+        statusId: statusId ? Number(statusId) : null,
+        executorId: executorId ? Number(executorId) : null,
+        creatorId: userId,
       },
-      filterStatus(query, statusId) {
-        if (statusId) query.where('statusId', statusId);
-      },
-      filterExecutor(query, executorId) {
-        if (executorId) query.where('executorId', executorId);
-      },
-      filterLabel(query, labelId, knex) {
-        if (labelId) {
-          query.whereExists(
-            knex('tasks_labels')
-              .whereRaw('tasks_labels.task_id = tasks.id')
-              .where('label_id ', labelId)
-          );
-        }
-      },
-      filterCreator(query, isCreatorUser, userId) {
-        if (isCreatorUser) query.where('creatorId', userId);
-      },
-    };
+      _.isNull
+    );
   }
 
   static get jsonSchema() {
@@ -87,6 +75,32 @@ export default class Task extends Model {
           },
           to: 'labels.id',
         },
+      },
+    };
+  }
+
+  static get modifiers() {
+    return {
+      defaultSelect(query) {
+        query();
+      },
+      filterStatus(query, statusId) {
+        if (statusId) query.where('statusId', statusId);
+      },
+      filterExecutor(query, executorId) {
+        if (executorId) query.where('executorId', executorId);
+      },
+      filterLabel(query, labelId, knex) {
+        if (labelId) {
+          query.whereExists(
+            knex('tasks_labels')
+              .whereRaw('tasks_labels.task_id = tasks.id')
+              .where('label_id ', labelId)
+          );
+        }
+      },
+      filterCreator(query, isCreatorUser, userId) {
+        if (isCreatorUser) query.where('creatorId', userId);
       },
     };
   }

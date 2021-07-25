@@ -8,12 +8,11 @@ export default (app) => {
     .get('/labels', { name: 'labels', preValidation: app.authenticate }, async (req, reply) => {
       // console.log('- get /labels req -', req);
       try {
-        const labels = await app.objection.models.label.query();
+        const labels = await app.repositories.label.findAll();
         reply.render('labels/index', { labels });
         return reply;
-      } catch (error) {
+      } catch (err) {
         // console.log('- get /labels err -', err);
-
         req.flash('error', i18next.t('flash.serverError'));
         reply.redirect(app.reverse('root'));
         return reply;
@@ -28,19 +27,13 @@ export default (app) => {
 
     .post('/labels', async (req, reply) => {
       // console.log('- post /labels req.body.data -', req.body.data);
-
       try {
-        const label = await app.objection.models.label.fromJson(req.body.data);
-        await app.objection.models.label.query().insert(label);
-
-        console.log(111, label);
-
+        await app.repositories.label.createOne(req.body.data);
         req.flash('info', i18next.t('flash.labels.create.success'));
         reply.redirect(app.reverse('labels'));
         return reply;
       } catch (err) {
         // console.log('- post /labels err -', err);
-
         req.flash('error', i18next.t('flash.labels.create.error'));
         reply.render('labels/new', { label: req.body.data, errors: err.data });
         return reply;
@@ -49,16 +42,13 @@ export default (app) => {
 
     .get('/labels/:id/edit', { name: 'editLabel' }, async (req, reply) => {
       // console.log('- get labels/:id/edit req.params -', req.params);
-
       const { id } = req.params;
       try {
-        const label = await app.objection.models.label.query().findById(id);
-
+        const label = await app.repositories.label.findById(id);
         reply.render('labels/edit', { label });
         return reply;
       } catch (err) {
         // console.log('- get labels/:id/edit err -', err);
-
         req.flash('error', i18next.t('flash.serverError'));
         reply.redirect(app.reverse('labels'));
         return reply;
@@ -69,19 +59,15 @@ export default (app) => {
       // console.log('- patch label req.params -', req.params);
       // console.log('- patch label req.body.data -', req.body.data);
       const { id } = req.params;
-
+      const { data } = req.body;
       try {
-        const formlabel = await app.objection.models.label.fromJson(req.body.data);
-        const dblabel = await app.objection.models.label.query().findById(id);
-        await dblabel.$query().patch(formlabel);
-
+        await app.repositories.label.patchById(id, data);
         req.flash('info', i18next.t('flash.labels.update.success'));
         reply.redirect(app.reverse('labels'));
         return reply;
       } catch (err) {
-        console.log('- user update err -', err);
+        // console.log('- user update err -', err);
         const label = { id, ...req.body.data };
-
         req.flash('error', i18next.t('flash.labels.update.error'));
         reply.render('/labels/edit', { label, errors: err.data });
         return reply;
@@ -91,16 +77,23 @@ export default (app) => {
     .delete('/labels/:id', { name: 'deleteLabel' }, async (req, reply) => {
       // console.log('- delete req.params -', req.params);
       const { id } = req.params;
-
       try {
-        await app.objection.models.label.query().deleteById(id);
+        const label = await app.repositories.label.findById(id);
 
+        if (label.tasks.length !== 0) {
+          // console.log('- status delete err - tasks related');
+          // throw new Error();
+          req.flash('error', 'label delete error - tasks related');
+          reply.redirect(app.reverse('labels'));
+          return reply;
+        }
+
+        await app.repositories.label.deleteById(id);
         req.flash('info', i18next.t('flash.labels.delete.succes'));
         reply.redirect(app.reverse('labels'));
         return reply;
       } catch (err) {
-        // console.log('- label delete err -', err);
-
+        console.log('- label delete err -', err);
         req.flash('error', i18next.t('flash.labels.delete.error'));
         reply.redirect(app.reverse('labels'));
         return reply;

@@ -41,6 +41,7 @@ block content
           th= t('views.tasks.index.id')
           th= t('views.tasks.index.name')
           th= t('views.tasks.index.status')
+          th= 'labels'
           th= t('views.tasks.index.creator')
           th= t('views.tasks.index.executor')
           th= t('views.tasks.index.createdAt')
@@ -52,6 +53,9 @@ block content
             td
               a(href=`/tasks/${task.id}`)= task.name
             td= task.status.name
+            td
+              each label in task.labels
+                div #{label.name}
             td= task.creator.fullName()
             td= task.executor ? task.executor.fullName() : '-'
             td= task.createdAt.toLocaleString()

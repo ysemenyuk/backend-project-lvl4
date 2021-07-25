@@ -75,10 +75,7 @@ const setupLocalization = () => {
   i18next.init({
     lng: 'ru',
     fallbackLng: 'en',
-    // debug: isDevelopment,
-    resources: {
-      ru,
-    },
+    resources: { ru },
   });
 };
 
@@ -98,9 +95,7 @@ const registerPlugins = (app) => {
 
   app.register(fastifySecureSession, {
     secret: process.env.SESSION_KEY,
-    cookie: {
-      path: '/',
-    },
+    cookie: { path: '/' },
   });
 
   fastifyPassport.registerUserDeserializer((user) =>
@@ -118,13 +113,14 @@ const registerPlugins = (app) => {
     fastifyPassport.authenticate(
       'form',
       {
-        // failureRedirect: app.reverse('root'),
         failureRedirect: '/',
         failureFlash: i18next.t('flash.authError'),
       }
       // @ts-ignore
     )(...args)
   );
+
+  app.decorate('repositories', {});
 
   app.register(fastifyMethodOverride);
   app.register(fastifyObjectionjs, {
@@ -135,9 +131,7 @@ const registerPlugins = (app) => {
 
 export default () => {
   const app = fastify({
-    logger: {
-      prettyPrint: isDevelopment,
-    },
+    logger: { prettyPrint: isDevelopment },
   });
 
   registerPlugins(app);

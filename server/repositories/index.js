@@ -1,7 +1,6 @@
-import statusRepository from './status.repository.js';
+import status from './status.repository.js';
+import label from './label.repository.js';
 
-// const repos = [statusRepository];
+const repos = [status, label];
 
-// export default (app) => repos.forEach((f) => f(app));
-
-export default (app) => statusRepository(app);
+export default (app) => repos.forEach((f) => f(app));

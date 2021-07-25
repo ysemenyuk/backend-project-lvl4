@@ -8,9 +8,9 @@ export default (app) => {
 
     .get('/tasks', { name: 'tasks', preValidation: app.authenticate }, async (req, reply) => {
       // console.log('- get tasks req -', req);
+      // console.log('- get tasks req.query -', req.query);
+      // console.log('- get tasks req.params -', req.params);
 
-      console.log('- get tasks req.query -', req.query);
-      console.log('- get tasks req.params -', req.params);
       const { models, knex } = app.objection;
       const { user } = req;
 
@@ -31,13 +31,11 @@ export default (app) => {
         const statuses = await models.status.query();
         const labels = await models.label.query();
 
-        // console.log('- get tasks tasks -', tasks);
-
+        console.log('- get tasks tasks -', tasks);
         reply.render('tasks/index', { filter, tasks, executors, statuses, labels });
         return reply;
       } catch (err) {
         console.log('- catch get tasks err -', err);
-
         req.flash('error', i18next.t('flash.serverError'));
         reply.redirect(app.reverse('root'));
         return reply;
@@ -60,7 +58,6 @@ export default (app) => {
         return reply;
       } catch (err) {
         // console.log('- get task err -', err);
-
         req.flash('error', i18next.t('flash.serverError'));
         reply.redirect(app.reverse('tasks'));
         return reply;
@@ -85,22 +82,13 @@ export default (app) => {
     })
 
     .post('/tasks', async (req, reply) => {
-      console.log('- post task req.body.data', req.body.data);
+      // console.log('- post task req.body.data', req.body.data);
 
       const { models } = app.objection;
-      const { name, description, statusId, executorId } = req.body.data;
+      // const { name, description, statusId, executorId } = req.body.data;
       const formLabels = req.body.data.labels;
 
-      const formData = _.omitBy(
-        {
-          name,
-          description,
-          statusId: statusId ? Number(statusId) : null,
-          executorId: executorId ? Number(executorId) : null,
-          creatorId: req.user.id,
-        },
-        _.isNull
-      );
+      const formData = models.task.prepareData(req.body.data, req.user.id);
 
       // console.log('- patch tasks formData -', formData);
 
@@ -113,12 +101,11 @@ export default (app) => {
         statuses = await models.status.query();
         labels = await models.label.query();
 
-        const task = await app.objection.models.task.fromJson(formData);
+        const task = await models.task.fromJson(formData);
 
-        await app.objection.models.task.transaction(async (trx) => {
-          await app.objection.models.task.query(trx).insert(task);
+        await models.task.transaction(async (trx) => {
+          await models.task.query(trx).insert(task);
           await task.$relatedQuery('labels', trx).relate(formLabels);
-
           // console.log('- post tasks task -', task);
         });
 
@@ -126,9 +113,8 @@ export default (app) => {
         reply.redirect(app.reverse('tasks'));
         return reply;
       } catch (err) {
-        console.log('- post tasks err -', err);
-        console.log('- post tasks err.data -', err.data);
-
+        // console.log('- post tasks err -', err);
+        // console.log('- post tasks err.data -', err.data);
         req.flash('error', i18next.t('flash.tasks.create.error'));
         reply.render('tasks/new', {
           task: req.body.data,
@@ -151,7 +137,7 @@ export default (app) => {
           .findById(id)
           .withGraphJoined('[labels]');
 
-        console.log('- get task/:id/edit task -', task);
+        // console.log('- get task/:id/edit task -', task);
 
         const executors = await app.objection.models.user.query();
         const statuses = await app.objection.models.status.query();
@@ -189,7 +175,7 @@ export default (app) => {
         _.isNull
       );
 
-      console.log('- patch tasks formData -', formData);
+      // console.log('- patch tasks formData -', formData);
 
       let executors;
       let statuses;
@@ -208,7 +194,7 @@ export default (app) => {
           await dbTask.$relatedQuery('labels', trx).unrelate();
           await dbTask.$relatedQuery('labels', trx).relate(formLabels);
 
-          console.log('- patch tasks dbTask -', dbTask);
+          // console.log('- patch tasks dbTask -', dbTask);
         });
 
         req.flash('info', i18next.t('flash.tasks.update.success'));
@@ -221,7 +207,7 @@ export default (app) => {
           ...formData,
           labels: labels.filter((i) => formLabels.includes(i.id)),
         };
-        console.log('- patch task catch error task -', task);
+        // console.log('- patch task catch error task -', task);
         req.flash('error', i18next.t('flash.tasks.update.error'));
         reply.render('/tasks/edit', {
           task,
@@ -238,12 +224,20 @@ export default (app) => {
       // console.log('- delete task req.params -', req.params);
       const { models } = app.objection;
       const { id } = req.params;
+      const userId = req.user.id;
 
       try {
+        const { creatorId } = await models.task.query().findById(id);
+
+        if (userId !== creatorId) {
+          req.flash('error', 'task delete creator error');
+          reply.redirect(app.reverse('tasks'));
+          return reply;
+        }
+
         await models.task.transaction(async (trx) => {
           await models.task.relatedQuery('labels', trx).for(id).unrelate();
           await models.task.query(trx).deleteById(id);
-
           // console.log('- patch tasks dbTask -', dbTask);
         });
 
@@ -251,8 +245,7 @@ export default (app) => {
         reply.redirect(app.reverse('tasks'));
         return reply;
       } catch (err) {
-        console.log('- delete task catch err -', err);
-
+        // console.log('- delete task catch err -', err);
         req.flash('error', 'task delete error');
         reply.redirect(app.reverse('tasks'));
         return reply;

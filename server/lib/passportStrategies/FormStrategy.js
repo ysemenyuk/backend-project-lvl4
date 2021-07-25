@@ -14,6 +14,8 @@ export default class FormStrategy extends Strategy {
       return this.pass();
     }
 
+    console.log(123, request.body);
+
     const email = _.get(request, 'body.data.email', null);
     const password = _.get(request, 'body.data.password', null);
     const { models } = this.app.objection;
