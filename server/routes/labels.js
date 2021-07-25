@@ -93,7 +93,7 @@ export default (app) => {
         reply.redirect(app.reverse('labels'));
         return reply;
       } catch (err) {
-        console.log('- label delete err -', err);
+        // console.log('- label delete err -', err);
         req.flash('error', i18next.t('flash.labels.delete.error'));
         reply.redirect(app.reverse('labels'));
         return reply;

@@ -10,17 +10,16 @@ export default class Task extends Model {
     return 'tasks';
   }
 
-  static prepareData({ name, description, statusId, executorId }, userId) {
-    return _.omitBy(
-      {
-        name,
-        description,
-        statusId: statusId ? Number(statusId) : null,
-        executorId: executorId ? Number(executorId) : null,
-        creatorId: userId,
-      },
-      _.isNull
-    );
+  static prepareData(data, user) {
+    const { name, description, statusId, executorId } = data;
+    const taskData = {
+      name,
+      description,
+      statusId: statusId ? Number(statusId) : null,
+      executorId: executorId ? Number(executorId) : null,
+      creatorId: user.id,
+    };
+    return _.omitBy(taskData, _.isNull);
   }
 
   static get jsonSchema() {
@@ -81,16 +80,13 @@ export default class Task extends Model {
 
   static get modifiers() {
     return {
-      defaultSelect(query) {
-        query();
-      },
-      filterStatus(query, statusId) {
+      filterByStatus(query, statusId) {
         if (statusId) query.where('statusId', statusId);
       },
-      filterExecutor(query, executorId) {
+      filterByExecutor(query, executorId) {
         if (executorId) query.where('executorId', executorId);
       },
-      filterLabel(query, labelId, knex) {
+      filterByLabel(query, labelId, knex) {
         if (labelId) {
           query.whereExists(
             knex('tasks_labels')
@@ -99,7 +95,7 @@ export default class Task extends Model {
           );
         }
       },
-      filterCreator(query, isCreatorUser, userId) {
+      filterByCreator(query, isCreatorUser, userId) {
         if (isCreatorUser) query.where('creatorId', userId);
       },
     };

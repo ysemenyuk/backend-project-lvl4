@@ -19,7 +19,7 @@ block content
             td
               each task in status.tasks
                 div #{task.name}
-            td= status.createdAt.toLocaleString()
+            td= formatDate(status.createdAt)
             td
               a(class='btn btn-link p-0' href=route('editStatus', { id: status.id }))= t('views.statuses.index.edit')
               form(action=route('deleteStatus', { id: status.id }), method="post")

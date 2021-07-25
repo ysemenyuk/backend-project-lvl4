@@ -1,5 +1,5 @@
 // @ts-check
-import fastifyPassport from 'fastify-passport';
+// import fastifyPassport from 'fastify-passport';
 import i18next from 'i18next';
 
 export default (app) => {
@@ -7,56 +7,39 @@ export default (app) => {
 
     .get('/users', { name: 'users' }, async (req, reply) => {
       // console.log('- get users req.user -', req.user);
-      const users = await app.objection.models.user.query();
+      const users = await app.repositories.user.findAll();
       reply.render('users/index', { users });
       return reply;
     })
 
     .get('/users/new', { name: 'newUser' }, (req, reply) => {
-      const user = new app.objection.models.user();
-      reply.render('users/new', { user });
+      reply.render('users/new', { user: {} });
     })
 
     .post('/users', async (req, reply) => {
       try {
-        const user = await app.objection.models.user.fromJson(req.body.data);
-        await app.objection.models.user.query().insert(user);
-
+        await app.repositories.user.createOne(req.body.data);
         req.flash('info', i18next.t('flash.users.create.success'));
         reply.redirect(app.reverse('root'));
         return reply;
       } catch (err) {
-        console.log('- user create err -', err);
-        const { data } = err;
+        // console.log('- user create err -', err);
         req.flash('error', i18next.t('flash.users.create.error'));
-        reply.render('users/new', { user: req.body.data, errors: data });
+        reply.render('users/new', { user: req.body.data, errors: err.data });
         return reply;
       }
     })
 
     .get(
       '/users/:id/edit',
-      {
-        name: 'editUser',
-        // preValidation: app.authenticate,
-        preValidation: fastifyPassport.authenticate('form', {
-          failureFlash: i18next.t('flash.authError'),
-          failureRedirect: '/users',
-        }),
-      },
+      { name: 'editUser', preValidation: app.authenticate },
       async (req, reply) => {
         // console.log('- get edit user req.user -', req.user);
         const { id } = req.params;
         const { user } = req;
 
-        // if (!req.isAuthenticated()) {
-        //   req.flash('error', i18next.t('flash.authError'));
-        //   reply.redirect(app.reverse('users'));
-        //   return reply;
-        // }
-
         if (user.id !== Number(id)) {
-          req.flash('error', i18next.t('flash.user.accessError'));
+          req.flash('error', i18next.t('flash.users.accessError'));
           reply.redirect(app.reverse('users'));
           return reply;
         }
@@ -68,29 +51,19 @@ export default (app) => {
 
     .patch(
       '/users/:id',
-      {
-        name: 'patchUser',
-        preValidation: fastifyPassport.authenticate('form', {
-          failureFlash: i18next.t('flash.authError'),
-          failureRedirect: '/users',
-        }),
-      },
+      { name: 'patchUser', preValidation: app.authenticate },
       async (req, reply) => {
-        console.log('- patch one user req.params -', req.params);
+        // console.log('- patch one user req.params -', req.params);
         const { id } = req.params;
 
         try {
-          const formUser = await app.objection.models.user.fromJson(req.body.data);
-          const dbUser = await app.objection.models.user.query().findById(id);
-          await dbUser.$query().patch(formUser);
-
+          await app.repositories.user.patchById(id, req.body.data);
           req.flash('info', i18next.t('flash.users.update.succes'));
           reply.redirect(app.reverse('users'));
           return reply;
         } catch (err) {
           // console.log('- user update err -', err);
           const user = { id, ...req.body.data };
-
           req.flash('error', i18next.t('flash.users.update.error'));
           reply.render('/users/edit', { user, errors: err.data });
           return reply;
@@ -100,13 +73,7 @@ export default (app) => {
 
     .delete(
       '/users/:id',
-      {
-        name: 'deleteUser',
-        preValidation: fastifyPassport.authenticate('form', {
-          failureFlash: i18next.t('flash.authError'),
-          failureRedirect: '/users',
-        }),
-      },
+      { name: 'deleteUser', preValidation: app.authenticate },
       async (req, reply) => {
         // console.log('- delete req.params -', req.params, req.user);
         const { id } = req.params;
@@ -119,15 +86,22 @@ export default (app) => {
         }
 
         try {
-          await app.objection.models.user.query().deleteById(id);
+          const dbUser = await app.repositories.user.findById(id);
 
+          if (dbUser.taskCreator.length !== 0 || dbUser.taskExecutor.length !== 0) {
+            // console.log('- status delete err - tasks related');
+            req.flash('error', 'user delete error - tasks related');
+            reply.redirect(app.reverse('users'));
+            return reply;
+          }
+
+          await app.repositories.user.deleteById(id);
           req.logOut();
-          req.flash('info', i18next.t('flash.users.delete.succes'));
+          req.flash('info', i18next.t('flash.users.delete.success'));
           reply.redirect(app.reverse('users'));
           return reply;
         } catch (err) {
-          console.log('- user delete err -', err);
-
+          // console.log('- user delete err -', err);
           req.flash('error', i18next.t('flash.users.delete.error'));
           reply.redirect(app.reverse('users'));
           return reply;

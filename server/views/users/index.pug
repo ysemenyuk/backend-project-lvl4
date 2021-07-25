@@ -7,6 +7,9 @@ block content
         th= t('views.users.index.id')
         th= t('views.users.index.fullName')
         th= t('views.users.index.email')
+        if isAuthenticated()
+          th= 'creator'
+          th= 'executor'
         th= t('views.users.index.createdAt')
         th
     tbody
@@ -15,6 +18,13 @@ block content
           td= user.id
           td= user.fullName()
           td= user.email
+          if isAuthenticated()
+            td
+              each task in user.taskCreator
+                div #{task.name}
+            td
+              each task in user.taskExecutor
+                div #{task.name}
           td= formatDate(user.createdAt)
           td 
             a(class='btn btn-link p-0' href=route('editUser', { id: user.id }))= t('views.users.index.edit')

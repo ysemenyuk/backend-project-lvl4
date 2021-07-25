@@ -13,7 +13,6 @@ export default (app) => {
       '/session',
       { name: 'session' },
       app.fp.authenticate('form', async (req, reply, err, user) => {
-        console.log(111, user);
         if (err) {
           return app.httpErrors.internalServerError(err);
         }

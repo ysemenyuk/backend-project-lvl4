@@ -12,7 +12,6 @@ export default (app) => {
         // console.log('- get /statuses req -', req);
         try {
           const statuses = await app.repositories.status.findAll();
-          console.log(111, statuses);
           reply.render('statuses/index', { statuses });
           return reply;
         } catch (error) {
