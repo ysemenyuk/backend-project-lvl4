@@ -1,6 +1,8 @@
 // @ts-check
 
-import { describe, beforeAll, it, expect } from '@jest/globals';
+import {
+  describe, beforeAll, it, expect,
+} from '@jest/globals';
 import getApp from '../server/index.js';
 
 describe('requests', () => {

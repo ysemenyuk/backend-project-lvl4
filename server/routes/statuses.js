@@ -20,7 +20,7 @@ export default (app) => {
           reply.redirect(app.reverse('root'));
           return reply;
         }
-      }
+      },
     )
 
     .get('/statuses/new', { name: 'newStatus' }, (req, reply) => {

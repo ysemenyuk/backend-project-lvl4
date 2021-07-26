@@ -52,7 +52,7 @@ export default (app) => {
 
         reply.render('users/edit', { user });
         return reply;
-      }
+      },
     )
 
     .patch(
@@ -74,7 +74,7 @@ export default (app) => {
           reply.render('/users/edit', { user, errors: err.data });
           return reply;
         }
-      }
+      },
     )
 
     .delete(
@@ -112,6 +112,6 @@ export default (app) => {
           reply.redirect(app.reverse('users'));
           return reply;
         }
-      }
+      },
     );
 };

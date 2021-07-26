@@ -17,7 +17,9 @@ export default (app) => {
         const statuses = await app.repositories.status.findAll();
         const labels = await app.repositories.label.findAll();
 
-        reply.render('tasks/index', { filter: query, tasks, executors, statuses, labels });
+        reply.render('tasks/index', {
+          filter: query, tasks, executors, statuses, labels,
+        });
         return reply;
       } catch (err) {
         // console.log('- catch get tasks err -', err);
@@ -51,7 +53,9 @@ export default (app) => {
         const statuses = await app.repositories.status.findAll();
         const labels = await app.repositories.label.findAll();
 
-        reply.render('tasks/new', { task: {}, errors: {}, executors, statuses, labels });
+        reply.render('tasks/new', {
+          task: {}, errors: {}, executors, statuses, labels,
+        });
         return reply;
       } catch (err) {
         // console.log('- get task/new err -', err);
@@ -100,7 +104,9 @@ export default (app) => {
         const statuses = await app.repositories.status.findAll();
         const labels = await app.repositories.label.findAll();
 
-        reply.render('tasks/edit', { task, errors: {}, executors, statuses, labels });
+        reply.render('tasks/edit', {
+          task, errors: {}, executors, statuses, labels,
+        });
         return reply;
       } catch (err) {
         // console.log('- get task/:id/edit catch err -', err);

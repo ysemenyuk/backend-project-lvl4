@@ -11,7 +11,9 @@ export default class Task extends Model {
   }
 
   static prepareData(data, user) {
-    const { name, description, statusId, executorId } = data;
+    const {
+      name, description, statusId, executorId,
+    } = data;
     const taskData = {
       name,
       description,
@@ -105,7 +107,7 @@ export default class Task extends Model {
           query.whereExists(
             knex('tasks_labels')
               .whereRaw('tasks_labels.task_id = tasks.id')
-              .where('label_id ', labelId)
+              .where('label_id ', labelId),
           );
         }
       },

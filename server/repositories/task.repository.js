@@ -3,7 +3,9 @@ export default (app) => {
   app.repositories.task = {
     findAll: async (query, user) => {
       const { models, knex } = app.objection;
-      const { status, executor, label, isCreatorUser } = query;
+      const {
+        status, executor, label, isCreatorUser,
+      } = query;
 
       const tasks = await models.task
         .query()

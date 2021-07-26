@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import faker from 'faker';
 
 const getUser = () => ({
@@ -21,4 +20,6 @@ const getTask = () => ({
   description: faker.random.word(),
 });
 
-export default { getUser, getStatus, getLabel, getTask };
+export default {
+  getUser, getStatus, getLabel, getTask,
+};

@@ -97,9 +97,8 @@ const registerPlugins = (app) => {
     cookie: { path: '/' },
   });
 
-  fastifyPassport.registerUserDeserializer((user) =>
-    app.objection.models.user.query().findById(user.id)
-  );
+  fastifyPassport.registerUserDeserializer((user) => app.objection
+    .models.user.query().findById(user.id));
   fastifyPassport.registerUserSerializer((user) => Promise.resolve(user));
 
   fastifyPassport.use(new FormStrategy('form', app));
@@ -108,16 +107,14 @@ const registerPlugins = (app) => {
   app.register(fastifyPassport.secureSession());
 
   app.decorate('fp', fastifyPassport);
-  app.decorate('authenticate', (...args) =>
-    fastifyPassport.authenticate(
-      'form',
-      {
-        failureRedirect: '/',
-        failureFlash: i18next.t('flash.authError'),
-      }
-      // @ts-ignore
-    )(...args)
-  );
+  app.decorate('authenticate', (...args) => fastifyPassport.authenticate(
+    'form',
+    {
+      failureRedirect: '/',
+      failureFlash: i18next.t('flash.authError'),
+    },
+    // @ts-ignore
+  )(...args));
 
   app.decorate('repositories', {});
 
@@ -138,9 +135,6 @@ const setErrorHandler1 = (app) => {
 
   app.setErrorHandler((err, req, reply) => {
     rollbar.error(err, req, reply);
-    console.log('---');
-    console.log(err);
-    console.log('---');
     reply.status(500).send(err);
   });
 };
