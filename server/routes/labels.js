@@ -89,7 +89,7 @@ export default (app) => {
         }
 
         await app.repositories.label.deleteById(id);
-        req.flash('info', i18next.t('flash.labels.delete.succes'));
+        req.flash('info', i18next.t('flash.labels.delete.success'));
         reply.redirect(app.reverse('labels'));
         return reply;
       } catch (err) {
