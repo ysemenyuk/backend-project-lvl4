@@ -14,31 +14,27 @@ module.exports = {
     migrations,
   },
   development: {
-    client: 'pg',
+    client: process.env.DEV_DB_TYPE,
     connection: {
-      user: 'root',
-      password: 'root',
-      database: 'tasks_db',
-      host: 'localhost',
-      port: '5432',
+      user: process.env.DEV_DB_USER,
+      password: process.env.DEV_DB_PASSWORD,
+      database: process.env.DEV_DB_NAME,
+      host: process.env.DEV_DB_HOST,
+      port: process.env.DEV_DB_PORT,
     },
     useNullAsDefault: true,
     migrations,
   },
-  // development: {
-  //   client: 'sqlite3',
-  //   connection: {
-  //     filename: './database.sqlite',
-  //   },
-  //   useNullAsDefault: true,
-  //   migrations,
-  // },
-  // production: {
-  //   client: 'sqlite3',
-  //   connection: {
-  //     filename: './database.sqlite',
-  //   },
-  //   useNullAsDefault: true,
-  //   migrations,
-  // },
+  production: {
+    client: process.env.PROD_DB_TYPE,
+    connection: {
+      user: process.env.PROD_DB_USER,
+      password: process.env.PROD_DB_PASSWORD,
+      database: process.env.PROD_DB_NAME,
+      host: process.env.PROD_DB_HOST,
+      port: process.env.PROD_DB_PORT,
+    },
+    useNullAsDefault: true,
+    migrations,
+  },
 };
