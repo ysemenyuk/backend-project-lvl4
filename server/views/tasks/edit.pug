@@ -19,10 +19,7 @@ block content
         select(id="data_statusId" name="data[statusId]" class=`form-control ${!errors.statusId ? '' : 'is-invalid'}`)
           option
           each status in statuses
-            if status.id === task.statusId
-              option(value=status.id selected) #{status.name}
-            else
-              option(value=status.id) #{status.name}
+            option(value=status.id selected=status.id == task.statusId) #{status.name}
         if errors.statusId
           .form-control-feedback.invalid-feedback= errors.statusId.map(({ message }) => message).join('. ')
 
@@ -31,7 +28,7 @@ block content
         select.form-control(id="data_executorId" name="data[executorId]")
           option
           each executor in executors
-            option(value=executor.id selected=executor.id === task.executorId) #{executor.fullName()}
+            option(value=executor.id selected=executor.id == task.executorId) #{executor.fullName()}
 
     .form-group
         label(for="data_labels")= t('views.tasks.new.labels')

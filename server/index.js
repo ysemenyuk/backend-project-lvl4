@@ -138,6 +138,9 @@ const setErrorHandler1 = (app) => {
 
   app.setErrorHandler((err, req, reply) => {
     rollbar.error(err, req, reply);
+    console.log('---');
+    console.log(err);
+    console.log('---');
     reply.status(500).send(err);
   });
 };

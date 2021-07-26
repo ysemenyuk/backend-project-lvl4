@@ -24,39 +24,44 @@ export default (app) => {
         .findById(id)
         .withGraphFetched('[status, creator, executor, labels]');
 
+      // console.log(111, task);
+
       return task;
     },
     createOne: async (data, user) => {
       const { models } = app.objection;
 
-      const formLabels = data.labels || null;
       const formTaskData = models.task.prepareData(data, user);
 
-      const task = await models.task.fromJson(formTaskData);
+      const formTask = await models.task.fromJson(formTaskData);
+      formTask.labels = models.task.prepareLabels(data);
 
       await models.task.transaction(async (trx) => {
-        await models.task.query(trx).insert(task);
-        await task.$relatedQuery('labels', trx).relate(formLabels);
+        await models.task.query(trx).insertGraph(formTask, { relate: ['labels'] });
       });
 
-      return task;
+      // return formTask;
     },
     patchById: async (id, data, user) => {
       const { models } = app.objection;
 
-      const formLabels = data.labels || null;
       const formTaskData = models.task.prepareData(data, user);
 
       const formTask = await models.task.fromJson(formTaskData);
+      formTask.labels = models.task.prepareLabels(data);
+
       const dbTask = await models.task.query().findById(id);
+      formTask.id = dbTask.id;
 
       await models.task.transaction(async (trx) => {
-        await dbTask.$query(trx).patch(formTask);
-        await dbTask.$relatedQuery('labels', trx).unrelate();
-        await dbTask.$relatedQuery('labels', trx).relate(formLabels);
+        await models.task.query(trx).upsertGraph(formTask, {
+          relate: true,
+          update: true,
+          unrelate: true,
+        });
       });
 
-      return dbTask;
+      // return formTask;
     },
     deleteById: async (id) => {
       const { models } = app.objection;

@@ -124,7 +124,7 @@ export default (app) => {
         reply.redirect(app.reverse('tasks'));
         return reply;
       } catch (err) {
-        // console.log('- patch task err -', err);
+        console.log('- patch task err -', err);
 
         const executors = await app.repositories.user.findAll();
         const statuses = await app.repositories.status.findAll();
@@ -132,6 +132,8 @@ export default (app) => {
 
         const taskLabels = labels.filter((i) => data.labels && data.labels.includes(i.id));
         const task = { id, ...data, labels: taskLabels };
+
+        console.log('task', task);
 
         req.flash('error', i18next.t('flash.tasks.update.error'));
         reply.render('/tasks/edit', {

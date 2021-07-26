@@ -15,11 +15,25 @@ export default class Task extends Model {
     const taskData = {
       name,
       description,
+      creatorId: user.id,
       statusId: statusId ? Number(statusId) : null,
       executorId: executorId ? Number(executorId) : null,
-      creatorId: user.id,
     };
+
     return _.omitBy(taskData, _.isNull);
+  }
+
+  static prepareLabels(data) {
+    let labels;
+    if (Array.isArray(data.labels)) {
+      labels = data.labels;
+    } else if (data.labels) {
+      labels = [data.labels];
+    } else {
+      labels = [];
+    }
+
+    return labels.map((value) => ({ id: value }));
   }
 
   static get jsonSchema() {
