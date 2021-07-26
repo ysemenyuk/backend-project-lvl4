@@ -124,7 +124,7 @@ export default (app) => {
         reply.redirect(app.reverse('tasks'));
         return reply;
       } catch (err) {
-        console.log('- patch task err -', err);
+        // console.log('- patch task err -', err);
 
         const executors = await app.repositories.user.findAll();
         const statuses = await app.repositories.status.findAll();
@@ -133,7 +133,7 @@ export default (app) => {
         const taskLabels = labels.filter((i) => data.labels && data.labels.includes(i.id));
         const task = { id, ...data, labels: taskLabels };
 
-        console.log('task', task);
+        // console.log('task', task);
 
         req.flash('error', i18next.t('flash.tasks.update.error'));
         reply.render('/tasks/edit', {
@@ -163,12 +163,12 @@ export default (app) => {
         }
 
         await app.repositories.task.deleteById(id);
-        req.flash('info', 'task deleted succes');
+        req.flash('info', i18next.t('flash.tasks.delete.success'));
         reply.redirect(app.reverse('tasks'));
         return reply;
       } catch (err) {
         // console.log('- delete task catch err -', err);
-        req.flash('error', 'task delete error');
+        req.flash('error', i18next.t('flash.tasks.delete.error'));
         reply.redirect(app.reverse('tasks'));
         return reply;
       }

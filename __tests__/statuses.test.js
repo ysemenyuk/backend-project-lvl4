@@ -3,16 +3,21 @@
 import getApp from '../server/index.js';
 import testData from './helpers/index.js';
 
+const userData = testData.getUser();
+const statusData1 = testData.getStatus();
+const statusData2 = testData.getStatus();
+const taskData = testData.getTask();
+
 describe('test statuses CRUD', () => {
   let app;
   let knex;
   let models;
-  let status;
+
+  let user;
+  let status1;
+  let status2;
 
   let cookie;
-
-  const userData = testData.getUser();
-  const statusData = testData.getStatus();
 
   beforeAll(async () => {
     app = await getApp();
@@ -22,9 +27,16 @@ describe('test statuses CRUD', () => {
 
   beforeEach(async () => {
     await knex.migrate.latest();
-    await models.user.query().insert(userData);
 
-    status = await models.status.query().insert(statusData);
+    user = await models.user.query().insert(userData);
+    status1 = await models.status.query().insert(statusData1);
+    status2 = await models.status.query().insert(statusData2);
+
+    await models.task.query().insert({
+      ...taskData,
+      creatorId: user.id,
+      statusId: status1.id,
+    });
 
     const { email, password } = userData;
 
@@ -80,8 +92,27 @@ describe('test statuses CRUD', () => {
     expect(createdStatus).toMatchObject(newStatus);
   });
 
+  it('create error', async () => {
+    const newStatus = { name: '' };
+
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('statuses'),
+      cookies: cookie,
+      payload: {
+        data: newStatus,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const createdStatus = await models.status.query().findOne({ name: newStatus.name });
+
+    expect(createdStatus).toBeUndefined();
+  });
+
   it('update', async () => {
-    const { id } = status;
+    const { id } = status1;
     const updateForm = { name: 'newStatusName' };
 
     const response = await app.inject({
@@ -99,8 +130,27 @@ describe('test statuses CRUD', () => {
     expect(updatedStatus).toMatchObject(updateForm);
   });
 
+  it('update error', async () => {
+    const { id } = status1;
+    const updateForm = { name: '' };
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/statuses/${id}`,
+      cookies: cookie,
+      payload: {
+        data: updateForm,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const updatedStatus = await models.status.query().findOne({ name: updateForm.name });
+    expect(updatedStatus).toBeUndefined();
+  });
+
   it('delete', async () => {
-    const { id } = status;
+    const { id } = status2;
 
     const response = await app.inject({
       method: 'DELETE',
@@ -111,6 +161,26 @@ describe('test statuses CRUD', () => {
 
     const deletedStatus = await models.status.query().findById(id);
     expect(deletedStatus).toBeUndefined();
+  });
+
+  it('delete error', async () => {
+    const { id } = status1;
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: `/statuses/${id}`,
+    });
+
+    expect(response.statusCode).toBe(302);
+
+    // console.log('response.statusCode', response.statusCode);
+    // const statuses = await models.status.query();
+    // const tasks = await models.task.query();
+    // console.log('statuses', statuses);
+    // console.log('tasks', tasks);
+
+    const deletedStatus = await models.status.query().findById(id);
+    expect(deletedStatus).toMatchObject(status1);
   });
 
   afterEach(async () => {

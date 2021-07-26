@@ -3,24 +3,26 @@
 import getApp from '../server/index.js';
 import testData from './helpers/index.js';
 
+const userData = testData.getUser();
+const statusData1 = testData.getStatus();
+const statusData2 = testData.getStatus();
+const labelData1 = testData.getLabel();
+const labelData2 = testData.getLabel();
+const taskData = testData.getTask();
+
 describe('test tasks CRUD', () => {
   let app;
   let knex;
   let models;
 
   let user;
-  let status;
+  let status1;
+  let status2;
   let label1;
   let label2;
   let task;
 
   let cookie;
-
-  const userData = testData.getUser();
-  const statusData = testData.getStatus();
-  const labelData1 = testData.getLabel();
-  const labelData2 = testData.getLabel();
-  const taskData = testData.getTask();
 
   beforeAll(async () => {
     app = await getApp();
@@ -32,14 +34,15 @@ describe('test tasks CRUD', () => {
     await knex.migrate.latest();
 
     user = await models.user.query().insert(userData);
-    status = await models.status.query().insert(statusData);
+    status1 = await models.status.query().insert(statusData1);
+    status2 = await models.status.query().insert(statusData2);
     label1 = await models.label.query().insert(labelData1);
     label2 = await models.label.query().insert(labelData2);
 
     task = await models.task.query().insert({
       ...taskData,
       creatorId: user.id,
-      statusId: status.id,
+      statusId: status1.id,
     });
 
     const { email, password } = userData;
@@ -87,7 +90,7 @@ describe('test tasks CRUD', () => {
 
   it('create', async () => {
     const form = testData.getTask();
-    form.statusId = status.id;
+    form.statusId = status1.id;
     form.labels = [label1.id];
 
     const response = await app.inject({
@@ -111,11 +114,30 @@ describe('test tasks CRUD', () => {
     expect(createdTask).toMatchObject(form);
   });
 
+  it('create error', async () => {
+    const form = testData.getTask();
+
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('tasks'),
+      cookies: cookie,
+      payload: {
+        data: form,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const createdTask = await models.task.query().findOne({ name: form.name });
+
+    expect(createdTask).toBeUndefined();
+  });
+
   test('update', async () => {
     const form = {
       name: 'newTaskName',
-      statusId: status.id,
-      labels: [label2.id],
+      statusId: status2.id,
+      labels: [label1.id, label2.id],
     };
 
     const response = await app.inject({
@@ -137,6 +159,27 @@ describe('test tasks CRUD', () => {
     updatedTask.labels = updatedTask.labels.map((i) => i.id);
 
     expect(updatedTask).toMatchObject(form);
+  });
+
+  test('update error', async () => {
+    const form = {
+      name: 'newTaskName',
+    };
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/tasks/${task.id}`,
+      cookies: cookie,
+      payload: {
+        data: form,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const updatedTask = await models.task.query().findOne({ name: form.name });
+
+    expect(updatedTask).toBeUndefined();
   });
 
   test('delete', async () => {

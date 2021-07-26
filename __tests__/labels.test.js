@@ -3,16 +3,23 @@
 import getApp from '../server/index.js';
 import testData from './helpers/index.js';
 
+const userData = testData.getUser();
+const statusData = testData.getStatus();
+const labelData1 = testData.getLabel();
+const labelData2 = testData.getLabel();
+const taskData = testData.getTask();
+
 describe('test labels CRUD', () => {
   let app;
   let knex;
   let models;
-  let label;
+
+  let user;
+  let status;
+  let label1;
+  let label2;
 
   let cookie;
-
-  const userData = testData.getUser();
-  const labelData = testData.getLabel();
 
   beforeAll(async () => {
     app = await getApp();
@@ -22,8 +29,22 @@ describe('test labels CRUD', () => {
 
   beforeEach(async () => {
     await knex.migrate.latest();
-    await models.user.query().insert(userData);
-    label = await models.label.query().insert(labelData);
+
+    user = await models.user.query().insert(userData);
+    status = await models.status.query().insert(statusData);
+    label1 = await models.label.query().insert(labelData1);
+    label2 = await models.label.query().insert(labelData2);
+
+    const task = {
+      ...taskData,
+      creatorId: user.id,
+      statusId: status.id,
+      labels: [{ id: label1.id }],
+    };
+
+    await models.task.transaction(async (trx) => {
+      await models.task.query(trx).insertGraph(task, { relate: ['labels'] });
+    });
 
     const { email, password } = userData;
 
@@ -79,8 +100,27 @@ describe('test labels CRUD', () => {
     expect(createdLabel).toMatchObject(newLabel);
   });
 
+  it('create error', async () => {
+    const newLabel = { name: '' };
+
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('labels'),
+      cookies: cookie,
+      payload: {
+        data: newLabel,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const createdLabel = await models.label.query().findOne({ name: newLabel.name });
+
+    expect(createdLabel).toBeUndefined();
+  });
+
   it('update', async () => {
-    const { id } = label;
+    const { id } = label2;
     const updateForm = { name: 'newname' };
 
     const response = await app.inject({
@@ -98,8 +138,27 @@ describe('test labels CRUD', () => {
     expect(updatedLabel).toMatchObject(updateForm);
   });
 
+  it('update error', async () => {
+    const { id } = label2;
+    const updateForm = { name: '' };
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/labels/${id}`,
+      cookies: cookie,
+      payload: {
+        data: updateForm,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const updatedLabel = await models.label.query().findOne({ name: updateForm.name });
+    expect(updatedLabel).toBeUndefined();
+  });
+
   it('delete', async () => {
-    const { id } = label;
+    const { id } = label2;
 
     const response = await app.inject({
       method: 'DELETE',
@@ -110,6 +169,20 @@ describe('test labels CRUD', () => {
 
     const deletedLabel = await models.label.query().findById(id);
     expect(deletedLabel).toBeUndefined();
+  });
+
+  it('delete error', async () => {
+    const { id } = label1;
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: `/labels/${id}`,
+    });
+
+    expect(response.statusCode).toBe(302);
+
+    const deletedLabel = await models.label.query().findById(id);
+    expect(deletedLabel).toMatchObject(label1);
   });
 
   afterEach(async () => {
