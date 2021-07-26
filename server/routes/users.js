@@ -64,7 +64,7 @@ export default (app) => {
 
         try {
           await app.repositories.user.patchById(id, req.body.data);
-          req.flash('info', i18next.t('flash.users.update.succes'));
+          req.flash('info', i18next.t('flash.users.update.success'));
           reply.redirect(app.reverse('users'));
           return reply;
         } catch (err) {
