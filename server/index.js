@@ -23,9 +23,7 @@ import webpackConfig from '../webpack.config.babel.js';
 
 import ru from './locales/ru.js';
 import addRoutes from './routes/index.js';
-
 import addRepositories from './repositories/index.js';
-
 import getHelpers from './helpers/index.js';
 import knexConfig from '../knexfile.js';
 import models from './models/index.js';
