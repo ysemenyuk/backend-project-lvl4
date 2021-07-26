@@ -23,6 +23,7 @@ describe('test statuses CRUD', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
     await models.user.query().insert(userData);
+
     status = await models.status.query().insert(statusData);
 
     const { email, password } = userData;

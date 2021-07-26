@@ -8,4 +8,3 @@ const address = '0.0.0.0';
 getApp().listen(port, address, () => {
   console.log(`Server is running on port: ${port}`);
 });
-// .catch(console.log);

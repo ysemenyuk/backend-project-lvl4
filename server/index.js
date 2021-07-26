@@ -2,7 +2,7 @@
 
 import fastify from 'fastify';
 import fastifyStatic from 'fastify-static';
-import fastifyErrorPage from 'fastify-error-page';
+// import fastifyErrorPage from 'fastify-error-page';
 import fastifyFormbody from 'fastify-formbody';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyPassport from 'fastify-passport';
@@ -17,6 +17,7 @@ import pointOfView from 'point-of-view';
 import qs from 'qs';
 import Pug from 'pug';
 import i18next from 'i18next';
+import Rollbar from 'rollbar';
 
 // @ts-ignore
 import webpackConfig from '../webpack.config.babel.js';
@@ -86,8 +87,8 @@ const addHooks = (app) => {
 };
 
 const registerPlugins = (app) => {
-  app.register(fastifySensible);
-  app.register(fastifyErrorPage);
+  app.register(fastifySensible, { errorHandler: false });
+  // app.register(fastifyErrorPage);
   app.register(fastifyReverseRoutes);
   app.register(fastifyFormbody, { parser: qs.parse });
 
@@ -127,11 +128,26 @@ const registerPlugins = (app) => {
   });
 };
 
+const setErrorHandler1 = (app) => {
+  const rollbar = new Rollbar({
+    accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+    captureUncaught: true,
+    captureUnhandledRejections: true,
+    enabled: true,
+  });
+
+  app.setErrorHandler((err, req, reply) => {
+    rollbar.error(err, req, reply);
+    reply.status(500).send(err);
+  });
+};
+
 export default () => {
   const app = fastify({
     logger: { prettyPrint: isDevelopment },
   });
 
+  setErrorHandler1(app);
   registerPlugins(app);
   setupLocalization();
   setUpViews(app);

@@ -7,9 +7,15 @@ export default (app) => {
 
     .get('/users', { name: 'users' }, async (req, reply) => {
       // console.log('- get users req.user -', req.user);
-      const users = await app.repositories.user.findAll();
-      reply.render('users/index', { users });
-      return reply;
+      try {
+        const users = await app.repositories.user.findAll();
+        reply.render('users/index', { users });
+        return reply;
+      } catch (err) {
+        req.flash('error', i18next.t('flash.serverError'));
+        reply.redirect(app.reverse('root'));
+        return reply;
+      }
     })
 
     .get('/users/new', { name: 'newUser' }, (req, reply) => {
