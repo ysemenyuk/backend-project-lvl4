@@ -36,7 +36,7 @@ const mode = process.env.NODE_ENV || 'development';
 const isProduction = mode === 'production';
 const isDevelopment = mode === 'development';
 
-console.log('-- mode --', mode);
+// console.log('-- mode --', mode);
 
 const setUpViews = (app) => {
   const { devServer } = webpackConfig;
