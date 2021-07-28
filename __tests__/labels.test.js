@@ -1,21 +1,19 @@
 // @ts-nocheck
 
 import getApp from '../server/index.js';
-import testData from './helpers/index.js';
+import { generateEntity, insertEntity } from './helpers/index.js';
 
-const userData = testData.getUser();
-const statusData = testData.getStatus();
-const labelData1 = testData.getLabel();
-const labelData2 = testData.getLabel();
-const taskData = testData.getTask();
+const userData = generateEntity('user');
+const statusData = generateEntity('status');
+const labelData1 = generateEntity('label');
+const labelData2 = generateEntity('label');
+const taskData = generateEntity('task');
 
 describe('test labels CRUD', () => {
   let app;
   let knex;
   let models;
 
-  let user;
-  let status;
   let label1;
   let label2;
 
@@ -30,21 +28,16 @@ describe('test labels CRUD', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
 
-    user = await models.user.query().insert(userData);
-    status = await models.status.query().insert(statusData);
-    label1 = await models.label.query().insert(labelData1);
-    label2 = await models.label.query().insert(labelData2);
+    const user = await insertEntity('user', models.user, userData);
+    const status = await insertEntity('status', models.status, statusData);
+    label1 = await insertEntity('label', models.label, labelData1);
+    label2 = await insertEntity('label', models.label, labelData2);
 
-    const task = {
-      ...taskData,
-      creatorId: user.id,
-      statusId: status.id,
-      labels: [{ id: label1.id }],
-    };
+    taskData.creatorId = user.id;
+    taskData.statusId = status.id;
+    taskData.labels = [{ id: label1.id }];
 
-    await models.task.transaction(async (trx) => {
-      await models.task.query(trx).insertGraph(task, { relate: ['labels'] });
-    });
+    await insertEntity('task', models.task, taskData);
 
     const { email, password } = userData;
 
@@ -82,7 +75,7 @@ describe('test labels CRUD', () => {
   });
 
   it('create', async () => {
-    const newLabel = testData.getLabel();
+    const newLabel = generateEntity('label');
 
     const response = await app.inject({
       method: 'POST',

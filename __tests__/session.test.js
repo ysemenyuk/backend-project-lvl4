@@ -1,14 +1,14 @@
 // @ts-nocheck
 
 import getApp from '../server/index.js';
-import testData from './helpers/index.js';
+import { generateEntity, insertEntity } from './helpers/index.js';
 
 describe('test session', () => {
   let app;
   let knex;
   let models;
 
-  const userData = testData.getUser();
+  const userData = generateEntity('user');
 
   beforeAll(async () => {
     app = await getApp();
@@ -18,7 +18,7 @@ describe('test session', () => {
 
   beforeEach(async () => {
     await knex.migrate.latest();
-    await models.user.query().insert(userData);
+    await insertEntity('user', models.user, userData);
   });
 
   it('test sign in / sign out', async () => {

@@ -3,17 +3,20 @@
 import _ from 'lodash';
 import getApp from '../server/index.js';
 import encrypt from '../server/lib/secure.js';
-import testData from './helpers/index.js';
+import { generateEntity, insertEntity } from './helpers/index.js';
+
+const userData1 = generateEntity('user');
+const userData2 = generateEntity('user');
 
 describe('test users CRUD', () => {
   let app;
   let knex;
   let models;
-  let user;
+
+  let user1;
+  let user2;
 
   let cookie;
-
-  const userData = testData.getUser();
 
   beforeAll(async () => {
     app = await getApp();
@@ -23,9 +26,10 @@ describe('test users CRUD', () => {
 
   beforeEach(async () => {
     await knex.migrate.latest();
-    user = await models.user.query().insert(userData);
+    user1 = await insertEntity('user', models.user, userData1);
+    user2 = await insertEntity('user', models.user, userData2);
 
-    const { email, password } = userData;
+    const { email, password } = userData1;
 
     const responseSignIn = await app.inject({
       method: 'POST',
@@ -59,7 +63,7 @@ describe('test users CRUD', () => {
   });
 
   it('create', async () => {
-    const newUser = testData.getUser();
+    const newUser = generateEntity('user');
 
     const response = await app.inject({
       method: 'POST',
@@ -82,7 +86,7 @@ describe('test users CRUD', () => {
   it('edit', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: `/users/${user.id}/edit`,
+      url: `/users/${user1.id}/edit`,
       cookies: cookie,
     });
 
@@ -90,11 +94,11 @@ describe('test users CRUD', () => {
   });
 
   it('update', async () => {
-    const updatedData = { ...userData, firstName: 'updatedName' };
+    const updatedData = { ...userData1, firstName: 'updatedName' };
 
     const response = await app.inject({
       method: 'PATCH',
-      url: `/users/${user.id}`,
+      url: `/users/${user1.id}`,
       cookies: cookie,
       payload: {
         data: updatedData,
@@ -107,22 +111,36 @@ describe('test users CRUD', () => {
       ..._.omit(updatedData, 'password'),
       passwordDigest: encrypt(updatedData.password),
     };
-    const dbUser = await models.user.query().findById(user.id);
+    const dbUser = await models.user.query().findById(user1.id);
     expect(dbUser).toMatchObject(expected);
   });
 
   it('delete', async () => {
     const response = await app.inject({
       method: 'DELETE',
-      url: `/users/${user.id}`,
+      url: `/users/${user1.id}`,
       cookies: cookie,
     });
 
     expect(response.statusCode).toBe(302);
 
-    const dbUser = await models.user.query().findById(user.id);
+    const dbUser = await models.user.query().findById(user1.id);
 
     expect(dbUser).toBeUndefined();
+  });
+
+  it('delete error', async () => {
+    const response = await app.inject({
+      method: 'DELETE',
+      url: `/users/${user2.id}`,
+      cookies: cookie,
+    });
+
+    expect(response.statusCode).toBe(302);
+
+    const dbUser = await models.user.query().findById(user2.id);
+
+    expect(dbUser).toMatchObject(user2);
   });
 
   afterEach(async () => {

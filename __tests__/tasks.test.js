@@ -1,14 +1,14 @@
 // @ts-nocheck
 
 import getApp from '../server/index.js';
-import testData from './helpers/index.js';
+import { generateEntity, insertEntity } from './helpers/index.js';
 
-const userData = testData.getUser();
-const statusData1 = testData.getStatus();
-const statusData2 = testData.getStatus();
-const labelData1 = testData.getLabel();
-const labelData2 = testData.getLabel();
-const taskData = testData.getTask();
+const userData = generateEntity('user');
+const statusData1 = generateEntity('status');
+const statusData2 = generateEntity('status');
+const labelData1 = generateEntity('label');
+const labelData2 = generateEntity('label');
+const taskData = generateEntity('task');
 
 describe('test tasks CRUD', () => {
   let app;
@@ -33,17 +33,17 @@ describe('test tasks CRUD', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
 
-    user = await models.user.query().insert(userData);
-    status1 = await models.status.query().insert(statusData1);
-    status2 = await models.status.query().insert(statusData2);
-    label1 = await models.label.query().insert(labelData1);
-    label2 = await models.label.query().insert(labelData2);
+    user = await insertEntity('user', models.user, userData);
+    status1 = await insertEntity('status', models.status, statusData1);
+    status2 = await insertEntity('status', models.status, statusData2);
+    label1 = await insertEntity('label', models.label, labelData1);
+    label2 = await insertEntity('label', models.label, labelData2);
 
-    task = await models.task.query().insert({
-      ...taskData,
-      creatorId: user.id,
-      statusId: status1.id,
-    });
+    taskData.creatorId = user.id;
+    taskData.statusId = status1.id;
+    taskData.labels = [{ id: label1.id }];
+
+    task = await insertEntity('task', models.task, taskData);
 
     const { email, password } = userData;
 
@@ -89,7 +89,7 @@ describe('test tasks CRUD', () => {
   });
 
   it('create', async () => {
-    const form = testData.getTask();
+    const form = generateEntity('task');
     form.statusId = status1.id;
     form.labels = [label1.id];
 
@@ -115,7 +115,7 @@ describe('test tasks CRUD', () => {
   });
 
   it('create error', async () => {
-    const form = testData.getTask();
+    const form = generateEntity('task');
 
     const response = await app.inject({
       method: 'POST',

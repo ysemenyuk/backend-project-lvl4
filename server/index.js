@@ -125,7 +125,7 @@ const registerPlugins = (app) => {
   });
 };
 
-const setErrorHandler1 = (app) => {
+const setErrorHandler = (app) => {
   const rollbar = new Rollbar({
     accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
     captureUncaught: true,
@@ -135,6 +135,7 @@ const setErrorHandler1 = (app) => {
 
   app.setErrorHandler((err, req, reply) => {
     rollbar.error(err, req, reply);
+    // console.log('err', err);
     reply.status(500).send(err);
   });
 };
@@ -144,7 +145,7 @@ export default () => {
     logger: { prettyPrint: isDevelopment },
   });
 
-  setErrorHandler1(app);
+  setErrorHandler(app);
   registerPlugins(app);
   setupLocalization();
   setUpViews(app);

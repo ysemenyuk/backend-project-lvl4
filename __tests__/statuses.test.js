@@ -1,19 +1,18 @@
 // @ts-nocheck
 
 import getApp from '../server/index.js';
-import testData from './helpers/index.js';
+import { generateEntity, insertEntity } from './helpers/index.js';
 
-const userData = testData.getUser();
-const statusData1 = testData.getStatus();
-const statusData2 = testData.getStatus();
-const taskData = testData.getTask();
+const userData = generateEntity('user');
+const statusData1 = generateEntity('status');
+const statusData2 = generateEntity('status');
+const taskData = generateEntity('task');
 
 describe('test statuses CRUD', () => {
   let app;
   let knex;
   let models;
 
-  let user;
   let status1;
   let status2;
 
@@ -28,15 +27,14 @@ describe('test statuses CRUD', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
 
-    user = await models.user.query().insert(userData);
-    status1 = await models.status.query().insert(statusData1);
-    status2 = await models.status.query().insert(statusData2);
+    const user = await insertEntity('user', models.user, userData);
+    status1 = await insertEntity('status', models.status, statusData1);
+    status2 = await insertEntity('status', models.status, statusData2);
 
-    await models.task.query().insert({
-      ...taskData,
-      creatorId: user.id,
-      statusId: status1.id,
-    });
+    taskData.creatorId = user.id;
+    taskData.statusId = status1.id;
+
+    await insertEntity('task', models.task, taskData);
 
     const { email, password } = userData;
 
@@ -74,7 +72,7 @@ describe('test statuses CRUD', () => {
   });
 
   it('create', async () => {
-    const newStatus = testData.getStatus();
+    const newStatus = generateEntity('status');
 
     const response = await app.inject({
       method: 'POST',
@@ -172,12 +170,6 @@ describe('test statuses CRUD', () => {
     });
 
     expect(response.statusCode).toBe(302);
-
-    // console.log('response.statusCode', response.statusCode);
-    // const statuses = await models.status.query();
-    // const tasks = await models.task.query();
-    // console.log('statuses', statuses);
-    // console.log('tasks', tasks);
 
     const deletedStatus = await models.status.query().findById(id);
     expect(deletedStatus).toMatchObject(status1);
