@@ -42,19 +42,31 @@ const insertEntity = async (type, model, data) => {
   }
 };
 
-// const generateEntitys = (count) => {
-//   console.log(1);
-//   return {
-//     users: new Array(count).map(() => generateEntity('user')),
+const generateEntitis = () => ({
+  user: generateEntity('user'),
+  status: generateEntity('status'),
+  label: generateEntity('label'),
+  task: generateEntity('task'),
+});
 
-//     status1: generateEntity('status'),
-//     status2: generateEntity('status'),
-//     label1: generateEntity('label'),
-//     label2: generateEntity('label'),
+const insertEntitis = async (models, data) => {
+  const entitis = {};
+  entitis.user = await insertEntity('user', models.user, data.user);
+  entitis.status = await insertEntity('status', models.status, data.status);
+  entitis.label = await insertEntity('label', models.label, data.label);
 
-//   };
-// };
+  if (data.task) {
+    const taskData = data.task;
+    taskData.creatorId = entitis.user.id;
+    taskData.statusId = entitis.status.id;
+    taskData.labels = [{ id: entitis.label.id }];
+
+    entitis.task = await insertEntity('task', models.task, taskData);
+  }
+
+  return entitis;
+};
 
 export {
-  generateEntity, insertEntity,
+  generateEntity, insertEntity, generateEntitis, insertEntitis,
 };

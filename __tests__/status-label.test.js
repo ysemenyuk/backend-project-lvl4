@@ -1,14 +1,10 @@
 // @ts-nocheck
-
+import _ from 'lodash';
 import getApp from '../server/index.js';
-import { generateEntity, insertEntity } from './helpers/index.js';
+import { generateEntity, generateEntitis, insertEntitis } from './helpers/index.js';
 
-const userData = generateEntity('user');
-const statusData = generateEntity('status');
-const labelData = generateEntity('label');
-const statusData2 = generateEntity('status');
-const labelData2 = generateEntity('label');
-const taskData = generateEntity('task');
+const data1 = generateEntitis();
+const data2 = generateEntitis();
 
 const mapping = [['status', 'statuses'], ['label', 'labels']];
 
@@ -17,8 +13,8 @@ describe('test status/label CRUD', () => {
   let knex;
   let models;
 
-  const entitis = {};
-  const entitis2 = {};
+  let entitis1;
+  let entitis2;
 
   let cookie;
 
@@ -31,20 +27,11 @@ describe('test status/label CRUD', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
 
-    entitis.user = await insertEntity('user', models.user, userData);
-    entitis.status = await insertEntity('status', models.status, statusData);
-    entitis.label = await insertEntity('label', models.label, labelData);
+    const data = _.omit(data1, 'task');
+    entitis1 = await insertEntitis(models, data);
+    entitis2 = await insertEntitis(models, data2);
 
-    entitis2.status = await insertEntity('status', models.status, statusData2);
-    entitis2.label = await insertEntity('label', models.label, labelData2);
-
-    taskData.creatorId = entitis.user.id;
-    taskData.statusId = entitis2.status.id;
-    taskData.labels = [{ id: entitis2.label.id }];
-
-    await insertEntity('task', models.task, taskData);
-
-    const { email, password } = userData;
+    const { email, password } = data1.user;
 
     const responseSignIn = await app.inject({
       method: 'POST',
@@ -74,7 +61,7 @@ describe('test status/label CRUD', () => {
     expect(createdEntity).toMatchObject(newEntity);
   });
 
-  test.each(mapping)('create error name %s route %s', async (_, route) => {
+  test.each(mapping)('create error name %s route %s', async (name, route) => {
     const newEntity = { name: '' };
     const response = await app.inject({
       method: 'POST',
@@ -93,7 +80,7 @@ describe('test status/label CRUD', () => {
   });
 
   test.each(mapping)('update name %s route %s', async (name, route) => {
-    const { id } = entitis[name];
+    const { id } = entitis1[name];
     const updateForm = { name: 'newName' };
 
     const response = await app.inject({
@@ -112,7 +99,7 @@ describe('test status/label CRUD', () => {
   });
 
   test.each(mapping)('update error name %s route %s', async (name, route) => {
-    const { id } = entitis[name];
+    const { id } = entitis1[name];
     const updateForm = { name: '' };
 
     const response = await app.inject({
@@ -131,7 +118,7 @@ describe('test status/label CRUD', () => {
   });
 
   test.each(mapping)('delete name %s route %s', async (name, route) => {
-    const { id } = entitis[name];
+    const { id } = entitis1[name];
 
     const response = await app.inject({
       method: 'DELETE',
