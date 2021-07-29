@@ -17,7 +17,7 @@ export default class Task extends Model {
     const taskData = {
       name,
       description,
-      creatorId: user.id,
+      creatorId: user ? user.id : null,
       statusId: statusId ? Number(statusId) : null,
       executorId: executorId ? Number(executorId) : null,
     };

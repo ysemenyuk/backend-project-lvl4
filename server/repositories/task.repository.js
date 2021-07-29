@@ -40,21 +40,21 @@ export default (app) => {
         await models.task.query(trx).insertGraph(formTask, { relate: ['labels'] });
       });
 
-      // return formTask;
+      return formTask;
     },
-    patchById: async (id, data, user) => {
+    patchById: async (id, data) => {
       const { models } = app.objection;
 
-      const formTaskData = models.task.prepareData(data, user);
-
-      const formTask = await models.task.fromJson(formTaskData);
-      formTask.labels = models.task.prepareLabels(data);
-
       const dbTask = await models.task.query().findById(id);
-      formTask.id = dbTask.id;
+
+      const updatedData = models.task.prepareData(data);
+
+      updatedData.labels = models.task.prepareLabels(data);
+      updatedData.creatorId = dbTask.creatorId;
+      updatedData.id = dbTask.id;
 
       await models.task.transaction(async (trx) => {
-        await models.task.query(trx).upsertGraph(formTask, {
+        await models.task.query(trx).upsertGraph(updatedData, {
           relate: true,
           update: true,
           unrelate: true,

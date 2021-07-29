@@ -8,33 +8,12 @@ block content
 
     +input(task, 'name', errors, t('views.tasks.edit.name'))(type="text")
 
-    input(name="_method" type="hidden" value="patch")
-
     .form-group
         label(for="data_description")= t('views.tasks.edit.description')
-        textarea.form-control(id="data_description" name="data[description]" rows="3")= task.description
-    
-    .form-group
-        label(for="data_statusId")= t('views.tasks.edit.status')
-        select(id="data_statusId" name="data[statusId]" class=`form-control ${!errors.statusId ? '' : 'is-invalid'}`)
-          option
-          each status in statuses
-            option(value=status.id selected=status.id == task.statusId) #{status.name}
-        if errors.statusId
-          .form-control-feedback.invalid-feedback= errors.statusId.map(({ message }) => message).join('. ')
+        textarea(id="data_description" name="data[description]" class='form-control' rows="3")= task.description || ''
 
-    .form-group
-        label(for="data_executorId")= t('views.tasks.edit.executor')
-        select.form-control(id="data_executorId" name="data[executorId]")
-          option
-          each executor in executors
-            option(value=executor.id selected=executor.id == task.executorId) #{executor.fullName()}
+    +select(task, statuses, 'statusId', errors, t('views.tasks.edit.status'))
+    +select(task, executors, 'executorId', errors, t('views.tasks.edit.executor'))
+    +select(task, labels, 'labels', errors, t('views.tasks.edit.labels'))(multiple="multiple")
 
-    .form-group
-        label(for="data_labels")= t('views.tasks.new.labels')
-        select(id="data_labels" name="data[labels]" class='form-control' multiple)
-          each label in labels
-            option(value=label.id selected=task && task.labels.map((i) => i.id).includes(label.id)) #{label.name}
-
-    .form-group
-      input(class='btn btn-primary' type='submit' value=t('views.tasks.edit.submit'))
+    +patch(status)(value=t('views.tasks.edit.submit'))

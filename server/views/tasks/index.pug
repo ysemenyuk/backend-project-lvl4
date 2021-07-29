@@ -8,24 +8,11 @@ block content
     .card-body.p-2.bg-light
       +formFor()(action=route('tasks') method='get')
         .form-row
-          .form-group.col-md-4
-            label(for="data_status")= t('views.tasks.index.filter.status')
-            select(id="data_status" name="status" class=`form-control`)
-              option
-              each status in statuses
-                option(value=status.id selected=status.id == filter.status) #{status.name}
-          .form-group.col-md-4
-            label(for="data_executor")= t('views.tasks.index.filter.executor')
-            select(id="data_executor" name="executor" class='form-control')
-              option
-              each executor in executors
-                option(value=executor.id selected=executor.id == filter.executor) #{executor.fullName()}
-          .form-group.col-md-4
-            label(for="data_label")= t('views.tasks.index.filter.label')
-            select(id="data_label" name="label" class='form-control')
-              option
-              each label in labels
-                option(value=label.id selected=label.id == filter.label) #{label.name}
+
+          +selectFilter(filter, statuses, 'status', t('views.tasks.index.filter.status'))
+          +selectFilter(filter, executors, 'executor', t('views.tasks.index.filter.executor'))
+          +selectFilter(filter, labels, 'label', t('views.tasks.index.filter.label'))
+
         .form-group
           .form-check
             input.form-check-input(id="data_isCreatorUser" type="checkbox" name="isCreatorUser" checked=filter.isCreatorUser)

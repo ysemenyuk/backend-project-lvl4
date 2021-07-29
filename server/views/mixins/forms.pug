@@ -1,5 +1,35 @@
 - const getInputName = (property) => `data[${property}]`
 - const getInputId = (property) => `data_${property}`
+-
+  const getEntityName = (entity, type) => {
+    const [match] = type.match(/status|executor|label/ig);
+    //- console.log({type, entity})
+    switch (match) {
+      case 'executor':
+        return entity.fullName();
+      case 'status':
+      case 'label':
+        return entity.name;
+      default:
+        return 'unknown type'
+    }
+  };
+
+  const isSelected = (value, type, entity) => {
+    const [match] = type.match(/status|executor|label/ig);
+    //- console.log({value, type, entity})
+    switch (match) {
+      case 'executor':
+        return value.id == entity.executorId || value.id == entity.executor;
+      case 'status':
+        return value.id == entity.statusId || value.id == entity.status;
+      case 'label':
+        if (entity.labels) return [entity.labels].flat().find(label => value.id == label.id || value.id == label);
+        if (entity.label) return [entity.label].find(id => value.id == id);
+      default:
+        return false;
+    }
+  };
 
 mixin formFor(entity = null)
   form&attributes(attributes)
@@ -22,8 +52,47 @@ mixin input(entity, propertyName,  errors = {}, label)
     if !_.isEmpty(propertyErrors)
       .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')
 
+mixin select(entity, entityList, propertyName, errors = {}, label)
+  - propertyErrors = _.get(errors, propertyName)
+  - classLine = 'form-control' + (!propertyErrors ? '' : ' is-invalid')
+  - inputId = getInputId(propertyName)
+  .form-group(class=(errors[propertyName] && 'has-danger'))
+    label(
+      for= inputId
+    )= label
+    select(
+      id=inputId
+      name=getInputName(propertyName)
+      class=classLine
+    )&attributes(attributes)
+      option
+      each value in entityList
+        option(value=value.id selected=isSelected(value, propertyName, entity))= getEntityName(value, propertyName)
+    if !_.isEmpty(propertyErrors)
+      .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')
+
+mixin selectFilter(entity, entityList, propertyName, label)
+  - inputId = getInputId(propertyName)
+  .form-group.col-md-4
+    label(
+      for= inputId
+    )= label
+    select(
+      id=inputId
+      name=propertyName
+      class="form-control"
+    )&attributes(attributes)
+      option
+      each value in entityList
+        option(value=value.id selected=isSelected(value, propertyName, entity))= getEntityName(value, propertyName)
+
 mixin submit(form = null)
   .form-group
+    input(class='btn btn-primary' type='submit')&attributes(attributes)
+
+mixin patch()
+  .form-group
+    input(name="_method" type="hidden" value="patch")
     input(class='btn btn-primary' type='submit')&attributes(attributes)
 
 mixin buttonTo(action, method)

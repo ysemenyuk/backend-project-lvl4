@@ -9,6 +9,5 @@ block content
     +input(user, 'lastName', errors, t('views.users.edit.lastName'))(type="text")
     +input(user, 'email', errors, t('views.users.edit.email'))(type="text")
     +input(user, 'password', errors, t('views.users.edit.password'))(type="password")
-    input(name="_method" type="hidden" value="patch")
-    .form-group
-      input(class='btn btn-primary' type='submit' value=t('views.users.edit.submit'))
+
+    +patch(status)(value=t('views.users.edit.submit'))

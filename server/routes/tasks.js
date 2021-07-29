@@ -45,7 +45,7 @@ export default (app) => {
 
     .get('/tasks/new', { name: 'newTask', preValidation: app.authenticate }, async (req, reply) => {
       try {
-        const task = new app.objection.models.task();
+        const task = {};
         const errors = {};
         const executors = await app.repositories.user.findAll();
         const statuses = await app.repositories.status.findAll();
@@ -119,10 +119,10 @@ export default (app) => {
     .patch('/tasks/:id', { name: 'patchTask', preValidation: app.authenticate }, async (req, reply) => {
       const { id } = req.params;
       const { data } = req.body;
-      const { user } = req;
+      // const { user } = req;
 
       try {
-        await app.repositories.task.patchById(id, data, user);
+        await app.repositories.task.patchById(id, data);
         req.flash('info', i18next.t('flash.tasks.update.success'));
         reply.redirect(app.reverse('tasks'));
         return reply;
