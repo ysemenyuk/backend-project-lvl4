@@ -1,12 +1,9 @@
 // @ts-nocheck
 
 import getApp from '../server/index.js';
-import { generateEntity, insertEntity } from './helpers/index.js';
+import { generateEntitis, insertEntitis } from './helpers/index.js';
 
-const userData = generateEntity('user');
-const statusData = generateEntity('status');
-const labelData = generateEntity('label');
-const taskData = generateEntity('task');
+const data = generateEntitis();
 
 const mapping = [['user', 'users'], ['status', 'statuses'], ['label', 'labels'], ['task', 'tasks']];
 
@@ -16,7 +13,7 @@ describe('test entitis pages', () => {
   let models;
   let cookie;
 
-  const entitis = {};
+  let entitis;
 
   beforeAll(async () => {
     app = await getApp();
@@ -27,17 +24,9 @@ describe('test entitis pages', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
 
-    entitis.user = await insertEntity('user', models.user, userData);
-    entitis.status = await insertEntity('status', models.status, statusData);
-    entitis.label = await insertEntity('label', models.label, labelData);
+    entitis = await insertEntitis(models, data);
 
-    taskData.creatorId = entitis.user.id;
-    taskData.statusId = entitis.status.id;
-    taskData.labels = [{ id: entitis.label.id }];
-
-    entitis.task = await insertEntity('task', models.task, taskData);
-
-    const { email, password } = userData;
+    const { email, password } = data.user;
 
     const responseSignIn = await app.inject({
       method: 'POST',
