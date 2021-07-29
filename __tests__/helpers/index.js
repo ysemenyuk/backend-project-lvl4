@@ -42,6 +42,19 @@ const insertEntity = async (type, model, data) => {
   }
 };
 
+// const generateEntitys = (count) => {
+//   console.log(1);
+//   return {
+//     users: new Array(count).map(() => generateEntity('user')),
+
+//     status1: generateEntity('status'),
+//     status2: generateEntity('status'),
+//     label1: generateEntity('label'),
+//     label2: generateEntity('label'),
+
+//   };
+// };
+
 export {
   generateEntity, insertEntity,
 };

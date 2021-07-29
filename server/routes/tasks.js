@@ -1,7 +1,6 @@
 // @ts-check
-// import fastifyPassport from 'fastify-passport';
+
 import i18next from 'i18next';
-// import _ from 'lodash';
 
 export default (app) => {
   app
@@ -18,7 +17,11 @@ export default (app) => {
         const labels = await app.repositories.label.findAll();
 
         reply.render('tasks/index', {
-          filter: query, tasks, executors, statuses, labels,
+          filter: query,
+          tasks,
+          executors,
+          statuses,
+          labels,
         });
         return reply;
       } catch (err) {
@@ -45,7 +48,7 @@ export default (app) => {
       }
     })
 
-    .get('/tasks/new', { name: 'newTask' }, async (req, reply) => {
+    .get('/tasks/new', { name: 'newTask', preValidation: app.authenticate }, async (req, reply) => {
       // console.log('- get /tasks/new req', req);
 
       try {
@@ -54,7 +57,11 @@ export default (app) => {
         const labels = await app.repositories.label.findAll();
 
         reply.render('tasks/new', {
-          task: {}, errors: {}, executors, statuses, labels,
+          task: {},
+          errors: {},
+          executors,
+          statuses,
+          labels,
         });
         return reply;
       } catch (err) {
@@ -93,7 +100,7 @@ export default (app) => {
       }
     })
 
-    .get('/tasks/:id/edit', { name: 'editTask' }, async (req, reply) => {
+    .get('/tasks/:id/edit', { name: 'editTask', preValidation: app.authenticate }, async (req, reply) => {
       // console.log('- get task/:id/edit req.params -', req.params);
       const { id } = req.params;
 
@@ -105,7 +112,11 @@ export default (app) => {
         const labels = await app.repositories.label.findAll();
 
         reply.render('tasks/edit', {
-          task, errors: {}, executors, statuses, labels,
+          task,
+          errors: {},
+          executors,
+          statuses,
+          labels,
         });
         return reply;
       } catch (err) {
@@ -163,9 +174,10 @@ export default (app) => {
         const { creatorId } = await app.repositories.task.findById(id);
 
         if (userId !== creatorId) {
-          req.flash('error', 'task delete creator error');
-          reply.redirect(app.reverse('tasks'));
-          return reply;
+          throw new Error();
+          // req.flash('error', 'task delete creator error');
+          // reply.redirect(app.reverse('tasks'));
+          // return reply;
         }
 
         await app.repositories.task.deleteById(id);

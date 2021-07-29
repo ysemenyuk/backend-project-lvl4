@@ -3,24 +3,21 @@
 import getApp from '../server/index.js';
 import { generateEntity, insertEntity } from './helpers/index.js';
 
-const userData = generateEntity('user');
+const userData1 = generateEntity('user');
+const userData2 = generateEntity('user');
 const statusData1 = generateEntity('status');
 const statusData2 = generateEntity('status');
 const labelData1 = generateEntity('label');
 const labelData2 = generateEntity('label');
-const taskData = generateEntity('task');
+const taskData1 = generateEntity('task');
+const taskData2 = generateEntity('task');
 
 describe('test tasks CRUD', () => {
   let app;
   let knex;
   let models;
 
-  let user;
-  let status1;
-  let status2;
-  let label1;
-  let label2;
-  let task;
+  const entitis = {};
 
   let cookie;
 
@@ -33,19 +30,28 @@ describe('test tasks CRUD', () => {
   beforeEach(async () => {
     await knex.migrate.latest();
 
-    user = await insertEntity('user', models.user, userData);
-    status1 = await insertEntity('status', models.status, statusData1);
-    status2 = await insertEntity('status', models.status, statusData2);
-    label1 = await insertEntity('label', models.label, labelData1);
-    label2 = await insertEntity('label', models.label, labelData2);
+    entitis.user1 = await insertEntity('user', models.user, userData1);
+    entitis.user2 = await insertEntity('user', models.user, userData2);
 
-    taskData.creatorId = user.id;
-    taskData.statusId = status1.id;
-    taskData.labels = [{ id: label1.id }];
+    entitis.status1 = await insertEntity('status', models.status, statusData1);
+    entitis.status2 = await insertEntity('status', models.status, statusData2);
 
-    task = await insertEntity('task', models.task, taskData);
+    entitis.label1 = await insertEntity('label', models.label, labelData1);
+    entitis.label2 = await insertEntity('label', models.label, labelData2);
 
-    const { email, password } = userData;
+    taskData1.creatorId = entitis.user1.id;
+    taskData1.statusId = entitis.status1.id;
+    taskData1.labels = [{ id: entitis.label1.id }];
+
+    entitis.task1 = await insertEntity('task', models.task, taskData1);
+
+    taskData2.creatorId = entitis.user2.id;
+    taskData2.statusId = entitis.status1.id;
+    taskData2.labels = [{ id: entitis.label1.id }];
+
+    entitis.task2 = await insertEntity('task', models.task, taskData2);
+
+    const { email, password } = userData1;
 
     const responseSignIn = await app.inject({
       method: 'POST',
@@ -68,30 +74,10 @@ describe('test tasks CRUD', () => {
     app.close();
   });
 
-  it('index', async () => {
-    const response = await app.inject({
-      method: 'GET',
-      url: app.reverse('tasks'),
-      cookies: cookie,
-    });
-
-    expect(response.statusCode).toBe(200);
-  });
-
-  it('new', async () => {
-    const response = await app.inject({
-      method: 'GET',
-      url: app.reverse('newTask'),
-      cookies: cookie,
-    });
-
-    expect(response.statusCode).toBe(200);
-  });
-
   it('create', async () => {
     const form = generateEntity('task');
-    form.statusId = status1.id;
-    form.labels = [label1.id];
+    form.statusId = entitis.status1.id;
+    form.labels = [entitis.label1.id];
 
     const response = await app.inject({
       method: 'POST',
@@ -115,7 +101,7 @@ describe('test tasks CRUD', () => {
   });
 
   it('create error', async () => {
-    const form = generateEntity('task');
+    const form = { name: '' };
 
     const response = await app.inject({
       method: 'POST',
@@ -136,13 +122,13 @@ describe('test tasks CRUD', () => {
   test('update', async () => {
     const form = {
       name: 'newTaskName',
-      statusId: status2.id,
-      labels: [label1.id, label2.id],
+      statusId: entitis.status2.id,
+      labels: [entitis.label1.id, entitis.label2.id],
     };
 
     const response = await app.inject({
       method: 'PATCH',
-      url: `/tasks/${task.id}`,
+      url: `/tasks/${entitis.task1.id}`,
       cookies: cookie,
       payload: {
         data: form,
@@ -168,7 +154,7 @@ describe('test tasks CRUD', () => {
 
     const response = await app.inject({
       method: 'PATCH',
-      url: `/tasks/${task.id}`,
+      url: `/tasks/${entitis.task1.id}`,
       cookies: cookie,
       payload: {
         data: form,
@@ -185,14 +171,30 @@ describe('test tasks CRUD', () => {
   test('delete', async () => {
     const response = await app.inject({
       method: 'DELETE',
-      url: `/tasks/${task.id}`,
+      url: `/tasks/${entitis.task1.id}`,
       cookies: cookie,
     });
 
     expect(response.statusCode).toBe(302);
 
-    const deletedTask = await models.task.query().findById(task.id);
+    const deletedTask = await models.task.query().findById(entitis.task1.id);
 
     expect(deletedTask).toBeUndefined();
+  });
+
+  test('delete error', async () => {
+    const response = await app.inject({
+      method: 'DELETE',
+      url: `/tasks/${entitis.task2.id}`,
+      cookies: cookie,
+    });
+
+    expect(response.statusCode).toBe(302);
+
+    const task = await models.task.query().findById(entitis.task2.id).withGraphFetched('labels');
+    console.log(1111, task);
+    // task.labels = task.labels.map((i) => i.id);
+
+    expect(task).toMatchObject(entitis.task2);
   });
 });

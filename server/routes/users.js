@@ -36,9 +36,7 @@ export default (app) => {
       }
     })
 
-    .get(
-      '/users/:id/edit',
-      { name: 'editUser', preValidation: app.authenticate },
+    .get('/users/:id/edit', { name: 'editUser', preValidation: app.authenticate },
       async (req, reply) => {
         // console.log('- get edit user req.user -', req.user);
         const { id } = req.params;
@@ -52,12 +50,9 @@ export default (app) => {
 
         reply.render('users/edit', { user });
         return reply;
-      },
-    )
+      })
 
-    .patch(
-      '/users/:id',
-      { name: 'patchUser', preValidation: app.authenticate },
+    .patch('/users/:id', { name: 'patchUser', preValidation: app.authenticate },
       async (req, reply) => {
         // console.log('- patch one user req.params -', req.params);
         const { id } = req.params;
@@ -74,12 +69,9 @@ export default (app) => {
           reply.render('/users/edit', { user, errors: err.data });
           return reply;
         }
-      },
-    )
+      })
 
-    .delete(
-      '/users/:id',
-      { name: 'deleteUser', preValidation: app.authenticate },
+    .delete('/users/:id', { name: 'deleteUser', preValidation: app.authenticate },
       async (req, reply) => {
         // console.log('- delete req.params -', req.params, req.user);
         const { id } = req.params;
@@ -112,6 +104,5 @@ export default (app) => {
           reply.redirect(app.reverse('users'));
           return reply;
         }
-      },
-    );
+      });
 };

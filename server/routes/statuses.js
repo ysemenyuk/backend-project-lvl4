@@ -5,9 +5,7 @@ import i18next from 'i18next';
 export default (app) => {
   app
 
-    .get(
-      '/statuses',
-      { name: 'statuses', preValidation: app.authenticate },
+    .get('/statuses', { name: 'statuses', preValidation: app.authenticate },
       async (req, reply) => {
         // console.log('- get /statuses req -', req);
         try {
@@ -20,8 +18,7 @@ export default (app) => {
           reply.redirect(app.reverse('root'));
           return reply;
         }
-      },
-    )
+      })
 
     .get('/statuses/new', { name: 'newStatus' }, (req, reply) => {
       // console.log('- get /statuses/new req -', req);
@@ -86,10 +83,10 @@ export default (app) => {
 
         if (status.tasks.length !== 0) {
           // console.log('- status delete err - tasks related');
-          // throw new Error();
-          req.flash('error', 'status delete error - tasks related');
-          reply.redirect(app.reverse('statuses'));
-          return reply;
+          throw new Error();
+          // req.flash('error', 'status delete error - tasks related');
+          // reply.redirect(app.reverse('statuses'));
+          // return reply;
         }
 
         await app.repositories.status.deleteById(id);

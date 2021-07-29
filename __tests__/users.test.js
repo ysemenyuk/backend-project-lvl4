@@ -44,24 +44,6 @@ describe('test users CRUD', () => {
     cookie = { [name]: value };
   });
 
-  it('index', async () => {
-    const response = await app.inject({
-      method: 'GET',
-      url: app.reverse('users'),
-    });
-
-    expect(response.statusCode).toBe(200);
-  });
-
-  it('new', async () => {
-    const response = await app.inject({
-      method: 'GET',
-      url: app.reverse('newUser'),
-    });
-
-    expect(response.statusCode).toBe(200);
-  });
-
   it('create', async () => {
     const newUser = generateEntity('user');
 
@@ -83,14 +65,21 @@ describe('test users CRUD', () => {
     expect(dbUser).toMatchObject(expected);
   });
 
-  it('edit', async () => {
+  it('create error', async () => {
+    const newUser = { email: 'email', firstName: 'name' };
+
     const response = await app.inject({
-      method: 'GET',
-      url: `/users/${user1.id}/edit`,
-      cookies: cookie,
+      method: 'POST',
+      url: app.reverse('users'),
+      payload: {
+        data: newUser,
+      },
     });
 
     expect(response.statusCode).toBe(200);
+
+    const dbUser = await models.user.query().findOne({ email: newUser.email });
+    expect(dbUser).toBeUndefined();
   });
 
   it('update', async () => {
@@ -113,6 +102,24 @@ describe('test users CRUD', () => {
     };
     const dbUser = await models.user.query().findById(user1.id);
     expect(dbUser).toMatchObject(expected);
+  });
+
+  it('update error', async () => {
+    const updatedData = { email: 'updatedEmail', firstName: '' };
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/users/${user1.id}`,
+      cookies: cookie,
+      payload: {
+        data: updatedData,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const dbUser = await models.user.query().findOne({ email: updatedData.email });
+    expect(dbUser).toBeUndefined();
   });
 
   it('delete', async () => {
