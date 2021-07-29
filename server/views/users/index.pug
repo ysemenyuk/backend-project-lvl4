@@ -8,8 +8,8 @@ block content
         th= t('views.users.index.fullName')
         th= t('views.users.index.email')
         if isAuthenticated()
-          th= 'creator'
-          th= 'executor'
+          th= t('views.users.index.creator')
+          th= t('views.users.index.executor')
         th= t('views.users.index.createdAt')
         th
     tbody

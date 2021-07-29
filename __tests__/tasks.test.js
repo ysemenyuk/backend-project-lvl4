@@ -169,8 +169,6 @@ describe('test tasks CRUD', () => {
     expect(response.statusCode).toBe(302);
 
     const task = await models.task.query().findById(entitis2.task.id).withGraphFetched('labels');
-    // console.log(1111, task);
-    // task.labels = task.labels.map((i) => i.id);
 
     expect(task).toMatchObject(entitis2.task);
   });

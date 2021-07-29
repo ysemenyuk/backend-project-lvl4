@@ -26,8 +26,6 @@ export default (app) => {
         .findById(id)
         .withGraphFetched('[status, creator, executor, labels]');
 
-      // console.log(111, task);
-
       return task;
     },
     createOne: async (data, user) => {

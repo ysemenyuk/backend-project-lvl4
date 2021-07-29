@@ -123,6 +123,7 @@ describe('test status/label CRUD', () => {
     const response = await app.inject({
       method: 'DELETE',
       url: `/${route}/${id}`,
+      cookies: cookie,
     });
 
     expect(response.statusCode).toBe(302);
@@ -137,6 +138,7 @@ describe('test status/label CRUD', () => {
     const response = await app.inject({
       method: 'DELETE',
       url: `/${route}/${id}`,
+      cookies: cookie,
     });
 
     expect(response.statusCode).toBe(302);

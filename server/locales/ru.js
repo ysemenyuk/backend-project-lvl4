@@ -24,6 +24,7 @@ module.exports = {
         },
         delete: {
           error: 'Не удалось удалить пользователя',
+          relateError: 'Не удалось удалить пользователя, есть связанные задачи',
           success: 'Пользователь успешно удалён',
         },
       },
@@ -38,6 +39,7 @@ module.exports = {
         },
         delete: {
           error: 'Не удалось удалить статус',
+          relateError: 'Не удалось удалить статус, есть связанные задачи',
           success: 'Статус успешно удалён',
         },
       },
@@ -52,6 +54,7 @@ module.exports = {
         },
         delete: {
           error: 'Не удалось удалить метку',
+          relateError: 'Не удалось удалить метку, есть связанные задачи',
           success: 'Метка успешно удалена',
         },
       },
@@ -67,6 +70,7 @@ module.exports = {
         },
         delete: {
           error: 'Не удалось удалить задачу',
+          creatorError: 'Задачу может удалить только её автор',
           success: 'Задача успешно удалена',
         },
       },
@@ -99,6 +103,8 @@ module.exports = {
           id: 'ID',
           fullName: 'Полное имя',
           email: 'Email',
+          creator: 'Создатель',
+          executor: 'Исполнитель',
           createdAt: 'Дата создания',
           delete: 'Удалить',
           edit: 'Изменить',
@@ -131,6 +137,7 @@ module.exports = {
         index: {
           id: 'ID',
           name: 'Наименование',
+          tasks: 'Задачи',
           createdAt: 'Дата создания',
           create: 'Создать статус',
           delete: 'Удалить',
@@ -151,6 +158,7 @@ module.exports = {
         index: {
           id: 'ID',
           name: 'Наименование',
+          tasks: 'Задачи',
           createdAt: 'Дата создания',
           create: 'Создать метку',
           delete: 'Удалить',
@@ -172,6 +180,7 @@ module.exports = {
           id: 'ID',
           name: 'Наименование',
           status: 'Статус',
+          labels: 'Метки',
           creator: 'Автор',
           executor: 'Исполнитель',
           createdAt: 'Дата создания',

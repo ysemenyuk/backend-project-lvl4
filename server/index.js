@@ -2,7 +2,7 @@
 
 import fastify from 'fastify';
 import fastifyStatic from 'fastify-static';
-// import fastifyErrorPage from 'fastify-error-page';
+import fastifyErrorPage from 'fastify-error-page';
 import fastifyFormbody from 'fastify-formbody';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyPassport from 'fastify-passport';
@@ -88,7 +88,7 @@ const addHooks = (app) => {
 
 const registerPlugins = (app) => {
   app.register(fastifySensible, { errorHandler: false });
-  // app.register(fastifyErrorPage);
+  app.register(fastifyErrorPage);
   app.register(fastifyReverseRoutes);
   app.register(fastifyFormbody, { parser: qs.parse });
 
@@ -135,7 +135,6 @@ const setErrorHandler = (app) => {
 
   app.setErrorHandler((err, req, reply) => {
     rollbar.error(err, req, reply);
-    // console.log('err', err);
     reply.status(500).send(err);
   });
 };

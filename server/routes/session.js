@@ -9,9 +9,7 @@ export default (app) => {
       reply.render('session/new', { signInForm });
     })
 
-    .post(
-      '/session',
-      { name: 'session' },
+    .post('/session', { name: 'session' },
       app.fp.authenticate('form', async (req, reply, err, user) => {
         if (err) {
           return app.httpErrors.internalServerError(err);
@@ -26,8 +24,7 @@ export default (app) => {
         await req.logIn(user);
         req.flash('success', i18next.t('flash.session.create.success'));
         return reply.redirect(app.reverse('root'));
-      }),
-    )
+      }))
 
     .delete('/session', (req, reply) => {
       req.logOut();
